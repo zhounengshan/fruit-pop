@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#101416" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="消灭水果" />
+  <meta name="description" content="点击成群水果，挑战100关。" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <title>消灭水果</title>
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">FRUIT POP</p>
+        <h1>消灭水果</h1>
+      </div>
+      <button id="soundBtn" class="icon-button" aria-label="切换声音">🔊</button>
+    </header>
+
+    <section class="mission-card" aria-label="关卡信息">
+      <div><span>关卡</span><strong id="levelText">1 / 100</strong></div>
+      <div><span>得分</span><strong id="scoreText">0</strong></div>
+      <div><span>目标</span><strong id="targetText">500</strong></div>
+    </section>
+
+    <div class="progress-track" aria-hidden="true"><div id="progressBar"></div></div>
+
+    <section class="board-wrap">
+      <div id="comboLabel" class="combo-label" aria-live="polite"></div>
+      <div id="board" class="board" role="grid" aria-label="水果消除棋盘"></div>
+    </section>
+
+    <section class="controls">
+      <button id="shuffleBtn" class="control-button"><span>🔀</span><b>水果重排</b><small id="shuffleCount">3 次</small></button>
+      <button id="restartBtn" class="control-button"><span>↻</span><b>重玩本关</b><small>重新挑战</small></button>
+    </section>
+
+    <p id="tip" class="tip">点击两个或更多相邻的同类水果</p>
+  </main>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div id="modalIcon" class="modal-icon">🍎</div>
+      <h2 id="modalTitle">任务完成</h2>
+      <p id="modalText"></p>
+      <div class="modal-stats">
+        <div><span>消除得分</span><strong id="modalBaseScore">0</strong></div>
+        <div><span>剩余奖励</span><strong id="modalBonus">0</strong></div>
+        <div class="total"><span>累计总分</span><strong id="modalScore">0</strong></div>
+      </div>
+      <button id="modalAction" class="primary-button">下一关</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
