@@ -22,6 +22,7 @@
         <h1>消灭水果</h1>
       </div>
       <div class="top-actions">
+        <button id="musicBtn" class="icon-button" aria-label="切换背景音乐">🎵</button>
         <button id="soundBtn" class="icon-button" aria-label="切换音效">🔊</button>
         <button id="settingsBtn" class="icon-button" aria-label="打开设置">⚙️</button>
       </div>
@@ -42,6 +43,18 @@
       <span>星星 <b id="starsText">0</b> ⭐</span>
     </section>
 
+    <section id="missionStrip" class="mission-strip">
+      <span>⭐ 本关挑战</span>
+      <strong id="missionText">剩余不超过5个水果</strong>
+      <em id="missionStatus">进行中</em>
+    </section>
+
+    <section id="bossPanel" class="boss-panel" hidden>
+      <div class="boss-head"><span id="bossIcon">👾</span><strong id="bossName">水果巨兽</strong><b id="bossTarget">消除 🍎 攻击</b></div>
+      <div class="boss-track"><div id="bossBar"></div></div>
+      <small id="bossHp">生命 10 / 10</small>
+    </section>
+
     <section class="board-wrap">
       <div id="comboLabel" class="combo-label" aria-live="polite"></div>
       <div id="board" class="board" role="grid" aria-label="水果消除棋盘"></div>
@@ -50,6 +63,11 @@
     <section class="preview-bar" id="previewBar" aria-live="polite">
       <span id="previewText">先点选水果群，查看本次得分</span>
       <strong id="previewScore"></strong>
+    </section>
+
+    <section id="feverPanel" class="fever-panel" aria-label="狂热模式进度">
+      <span id="feverLabel">🔥 狂热能量 0 / 5</span>
+      <div class="fever-track"><div id="feverBar"></div></div>
     </section>
 
     <section class="controls">
@@ -69,6 +87,7 @@
       <div class="modal-stats">
         <div><span>消除得分</span><strong id="modalBaseScore">0</strong></div>
         <div><span>剩余奖励</span><strong id="modalBonus">0</strong></div>
+        <div><span>附加挑战</span><strong id="modalMission">未完成</strong></div>
         <div class="total"><span>累计总分</span><strong id="modalScore">0</strong></div>
       </div>
       <button id="modalAction" class="primary-button">下一关</button>
@@ -79,9 +98,11 @@
     <div class="modal-card settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="modal-icon">⚙️</div>
       <h2 id="settingsTitle">游戏设置</h2>
+      <label class="setting-row"><span>背景音乐</span><input id="musicToggle" type="checkbox" checked /></label>
       <label class="setting-row"><span>消除音效</span><input id="soundToggle" type="checkbox" checked /></label>
       <label class="setting-row"><span>震动反馈</span><input id="vibrateToggle" type="checkbox" checked /></label>
       <label class="setting-row"><span>二次确认消除</span><input id="confirmToggle" type="checkbox" checked /></label>
+      <label class="volume-row"><span>音乐音量</span><input id="musicVolume" type="range" min="0" max="100" value="35" /></label>
       <p class="settings-note">关闭二次确认后，点击水果群会立即消除。</p>
       <button id="settingsClose" class="primary-button">保存设置</button>
     </div>
