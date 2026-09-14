@@ -76,17 +76,11 @@ button { font: inherit; color: inherit; }
   transition: transform .13s, filter .13s, opacity .18s, outline-color .15s; overflow: hidden;
 }
 .cell::before { content: ""; position: absolute; inset: 2px 4px auto; height: 34%; border-radius: 8px; background: linear-gradient(#ffffff65, #ffffff00); pointer-events: none; }
-.cell::after { position: absolute; right: 4px; bottom: 2px; color: #fff; font-size: .56rem; line-height: 1; text-shadow: 0 1px 2px #000; }
 .cell.type-0 { background: linear-gradient(145deg, #ff3154, #9d0626); border-color: #ffd0d7; box-shadow: 0 4px 0 #580012; }
-.cell.type-0::after { content: "●"; }
 .cell.type-1 { background: linear-gradient(145deg, #ff9700, #aa3100); border-color: #ffe3a9; box-shadow: 0 4px 0 #641c00; }
-.cell.type-1::after { content: "▲"; }
 .cell.type-2 { background: linear-gradient(145deg, #fff000, #b77e00); border-color: #ffffd2; box-shadow: 0 4px 0 #694700; }
-.cell.type-2::after { content: "◆"; }
 .cell.type-3 { background: linear-gradient(145deg, #38e65a, #056b26); border-color: #c7ffd0; box-shadow: 0 4px 0 #023f16; }
-.cell.type-3::after { content: "■"; }
 .cell.type-4 { background: linear-gradient(145deg, #c75cff, #571090); border-color: #f0d0ff; box-shadow: 0 4px 0 #300451; }
-.cell.type-4::after { content: "★"; }
 .cell.special-bomb { background: radial-gradient(circle, #fff79a, #ff781f 48%, #9c1120); border-color: #fff4b4; box-shadow: 0 4px 0 #661018, 0 0 14px #ff9c42; }
 .cell.special-rainbow { background: conic-gradient(#ff3355, #ffda35, #38e65a, #3abfff, #be55ff, #ff3355); border-color: #fff; box-shadow: 0 4px 0 #56306f, 0 0 16px #fff8; }
 .cell:active { transform: scale(.9); }
