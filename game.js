@@ -15,11 +15,11 @@
     3: ['完美清屏！', '三星高手！', '无懈可击！']
   };
   const STAGES = [
-    { max: 20, name: '阳光果园', theme: 'orchard', tempo: 420, wave: 'triangle', notes: [262, 330, 392, 330, 294, 349, 440, 349] },
-    { max: 40, name: '热带海岛', theme: 'tropic', tempo: 360, wave: 'sine', notes: [294, 370, 440, 494, 440, 370, 330, 370] },
-    { max: 60, name: '落日农场', theme: 'sunset', tempo: 470, wave: 'triangle', notes: [220, 262, 330, 294, 247, 294, 349, 330] },
-    { max: 80, name: '冰雪果境', theme: 'ice', tempo: 520, wave: 'sine', notes: [392, 494, 587, 494, 440, 523, 659, 523] },
-    { max: 100, name: '星空果园', theme: 'space', tempo: 400, wave: 'sine', notes: [196, 294, 392, 494, 440, 392, 330, 294] }
+    { max: 20, name: '阳光果园', theme: 'orchard' },
+    { max: 40, name: '热带海岛', theme: 'tropic' },
+    { max: 60, name: '落日农场', theme: 'sunset' },
+    { max: 80, name: '冰雪果境', theme: 'ice' },
+    { max: 100, name: '星空果园', theme: 'space' }
   ];
 
   const state = {
@@ -40,7 +40,7 @@
     music: true,
     musicVolume: .35,
     vibrate: true,
-    confirmTap: true,
+    confirmTap: false,
     selected: null,
     starsByLevel: {},
     totalStars: 0,
@@ -72,8 +72,9 @@
   };
 
   let audio;
-  let musicTimer;
-  let musicStep = 0;
+  const musicPlayer = new Audio();
+  musicPlayer.loop = true;
+  musicPlayer.preload = 'auto';
 
   function levelTarget(level) {
     return 500 + (level - 1) * 100;
@@ -131,7 +132,7 @@
       state.sound = saved?.sound !== false;
       state.music = saved?.music !== false;
       state.vibrate = saved?.vibrate !== false;
-      state.confirmTap = saved?.confirmTap !== false;
+      state.confirmTap = saved?.uiVersion === 4 ? saved?.confirmTap === true : false;
       if (Number.isFinite(saved?.musicVolume)) state.musicVolume = Math.min(1, Math.max(0, saved.musicVolume));
       if (saved?.starsByLevel && typeof saved.starsByLevel === 'object') state.starsByLevel = saved.starsByLevel;
       state.totalStars = Object.values(state.starsByLevel).reduce((sum, value) => sum + Number(value || 0), 0);
@@ -150,6 +151,7 @@
       musicVolume: state.musicVolume,
       vibrate: state.vibrate,
       confirmTap: state.confirmTap,
+      uiVersion: 4,
       starsByLevel: state.starsByLevel
     }));
   }
@@ -208,6 +210,7 @@
     setupBoss();
     makeBoard();
     render();
+    if (!musicPlayer.paused) syncMusicTrack(true);
     el.tip.textContent = state.confirmTap ? '首次点选预览，第二次确认消除' : '点击两个或更多相邻的同类水果';
   }
 
@@ -353,6 +356,8 @@
     el.shuffle.disabled = state.shuffles <= 0;
     el.sound.textContent = state.sound ? '🔊' : '🔇';
     el.music.textContent = state.music ? '🎵' : '🚫';
+    musicPlayer.volume = state.musicVolume * .72;
+    musicPlayer.playbackRate = state.feverMoves > 0 ? 1.08 : 1;
 
     const mission = missionFor(state.level);
     const missionDone = missionComplete(false);
@@ -378,7 +383,7 @@
     state.selected = null;
     if (!el.previewBar) return;
     el.previewBar.classList.remove('ready');
-    el.previewText.textContent = '先点选水果群，查看本次得分';
+    el.previewText.textContent = state.confirmTap ? '先点选水果群，查看本次得分' : '点击同类水果，连续消除可进入狂热模式';
     el.previewScore.textContent = '';
   }
 
@@ -451,6 +456,7 @@
     updateCombo();
     state.roundScore += gain;
     state.score += gain;
+    celebrateClear(originRow, originCol, action, gain);
 
     action.cells.forEach(([row, col]) => {
       const node = el.board.children[row * state.cols + col];
@@ -526,6 +532,42 @@
     el.combo.classList.remove('show');
     void el.combo.offsetWidth;
     el.combo.classList.add('show');
+  }
+
+  function celebrateClear(row, col, action, gain) {
+    const origin = el.board.children[row * state.cols + col];
+    if (!origin) return;
+    const rect = origin.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const fruit = action.type < BOMB ? FRUITS[action.type] : SPECIALS[action.type]?.icon || '✨';
+    const particleCount = Math.min(14, Math.max(5, action.cells.length));
+    for (let index = 0; index < particleCount; index++) {
+      const particle = document.createElement('i');
+      const angle = Math.PI * 2 * index / particleCount + Math.random() * .35;
+      const distance = 42 + Math.random() * 72;
+      particle.className = 'fruit-particle';
+      particle.textContent = index % 3 === 0 ? '✨' : fruit;
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+      particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+      particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+      document.body.appendChild(particle);
+      setTimeout(() => particle.remove(), 760);
+    }
+    const score = document.createElement('i');
+    score.className = 'score-float';
+    score.textContent = `+${gain}`;
+    score.style.left = `${x}px`;
+    score.style.top = `${y}px`;
+    document.body.appendChild(score);
+    setTimeout(() => score.remove(), 900);
+    if (action.cells.length >= 10 || action.type >= BOMB || action.comboType) {
+      el.board.classList.remove('impact');
+      void el.board.offsetWidth;
+      el.board.classList.add('impact');
+      setTimeout(() => el.board.classList.remove('impact'), 380);
+    }
   }
 
   function checkState() {
@@ -698,36 +740,24 @@
   }
 
   function startMusic() {
-    if (!state.music || musicTimer) return;
-    try {
-      ensureAudio();
-      playMusicBeat();
-    } catch (error) {}
+    if (!state.music) return;
+    syncMusicTrack();
+    musicPlayer.play().catch(() => {});
   }
 
   function stopMusic() {
-    clearTimeout(musicTimer);
-    musicTimer = undefined;
+    musicPlayer.pause();
   }
 
-  function playMusicBeat() {
-    if (!state.music) {
-      stopMusic();
-      return;
+  function syncMusicTrack(force = false) {
+    const source = new URL(`assets/music/${currentStage().theme}.mp3`, window.location.href).href;
+    if (force || musicPlayer.src !== source) {
+      const wasPlaying = !musicPlayer.paused;
+      musicPlayer.src = source;
+      musicPlayer.currentTime = 0;
+      if (wasPlaying && state.music) musicPlayer.play().catch(() => {});
     }
-    try {
-      ensureAudio();
-      const stage = currentStage();
-      const frequency = stage.notes[musicStep % stage.notes.length];
-      const volume = .045 * state.musicVolume;
-      note(frequency, audio.currentTime + .02, stage.tempo / 1000 * .72, stage.wave, volume);
-      if (musicStep % 4 === 0) note(frequency / 2, audio.currentTime + .02, stage.tempo / 1000 * 1.8, 'sine', volume * .55);
-      musicStep++;
-      const tempo = state.feverMoves > 0 ? Math.max(230, stage.tempo - 100) : stage.tempo;
-      musicTimer = setTimeout(playMusicBeat, tempo);
-    } catch (error) {
-      stopMusic();
-    }
+    musicPlayer.volume = state.musicVolume * .72;
   }
 
   function softTone(size) {
