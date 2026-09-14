@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#101416" />
+  <meta name="theme-color" content="#211329" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="消灭水果" />
@@ -14,40 +14,56 @@
   <link rel="stylesheet" href="style.css" />
   <title>消灭水果</title>
 </head>
-<body>
+<body data-theme="orchard">
   <main class="game-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">FRUIT POP</p>
+        <p id="stageName" class="eyebrow">阳光果园 · 第1阶段</p>
         <h1>消灭水果</h1>
       </div>
-      <button id="soundBtn" class="icon-button" aria-label="切换声音">🔊</button>
+      <div class="top-actions">
+        <button id="soundBtn" class="icon-button" aria-label="切换音效">🔊</button>
+        <button id="settingsBtn" class="icon-button" aria-label="打开设置">⚙️</button>
+      </div>
     </header>
 
     <section class="mission-card" aria-label="关卡信息">
       <div><span>关卡</span><strong id="levelText">1 / 100</strong></div>
-      <div><span>得分</span><strong id="scoreText">0</strong></div>
-      <div><span>目标</span><strong id="targetText">500</strong></div>
+      <div><span>累计总分</span><strong id="scoreText">0</strong></div>
+      <div><span>过关目标</span><strong id="targetText">500</strong></div>
     </section>
 
-    <div class="progress-track" aria-hidden="true"><div id="progressBar"></div></div>
+    <div class="progress-track" aria-label="过关进度"><div id="progressBar"></div></div>
+
+    <section class="live-stats" aria-label="实时得分信息">
+      <span>本页 <b id="roundScoreText">0</b></span>
+      <span>还差 <b id="gapText">500</b></span>
+      <span>剩余 <b id="remainingText">80</b></span>
+      <span>星星 <b id="starsText">0</b> ⭐</span>
+    </section>
 
     <section class="board-wrap">
       <div id="comboLabel" class="combo-label" aria-live="polite"></div>
       <div id="board" class="board" role="grid" aria-label="水果消除棋盘"></div>
     </section>
 
-    <section class="controls">
-      <button id="shuffleBtn" class="control-button"><span>🔀</span><b>水果重排</b><small id="shuffleCount">3 次</small></button>
-      <button id="restartBtn" class="control-button"><span>↻</span><b>重玩本关</b><small>重新挑战</small></button>
+    <section class="preview-bar" id="previewBar" aria-live="polite">
+      <span id="previewText">先点选水果群，查看本次得分</span>
+      <strong id="previewScore"></strong>
     </section>
 
-    <p id="tip" class="tip">点击两个或更多相邻的同类水果</p>
+    <section class="controls">
+      <button id="shuffleBtn" class="control-button"><span>🔀</span><b>水果重排</b><small id="shuffleCount">3 次</small></button>
+      <button id="restartBtn" class="control-button"><span>↻</span><b>重玩本关</b><small>本页分数清零</small></button>
+    </section>
+
+    <p id="tip" class="tip">首次点选预览，第二次确认消除</p>
   </main>
 
   <div id="modal" class="modal" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card result-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div id="modalIcon" class="modal-icon">🍎</div>
+      <div id="resultStars" class="result-stars" aria-label="本关星级">☆☆☆</div>
       <h2 id="modalTitle">任务完成</h2>
       <p id="modalText"></p>
       <div class="modal-stats">
@@ -56,6 +72,18 @@
         <div class="total"><span>累计总分</span><strong id="modalScore">0</strong></div>
       </div>
       <button id="modalAction" class="primary-button">下一关</button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal" hidden>
+    <div class="modal-card settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-icon">⚙️</div>
+      <h2 id="settingsTitle">游戏设置</h2>
+      <label class="setting-row"><span>消除音效</span><input id="soundToggle" type="checkbox" checked /></label>
+      <label class="setting-row"><span>震动反馈</span><input id="vibrateToggle" type="checkbox" checked /></label>
+      <label class="setting-row"><span>二次确认消除</span><input id="confirmToggle" type="checkbox" checked /></label>
+      <p class="settings-note">关闭二次确认后，点击水果群会立即消除。</p>
+      <button id="settingsClose" class="primary-button">保存设置</button>
     </div>
   </div>
 
