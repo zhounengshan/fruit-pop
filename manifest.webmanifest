@@ -1,7 +1,7 @@
 {
   "name":"消灭水果",
   "short_name":"消灭水果",
-  "description":"含原创音乐、狂热模式、特殊组合和Boss战的100关水果消除游戏。",
+  "description":"含原创音乐、狂热模式、特殊组合和Boss战的无限关卡水果消除游戏。",
   "start_url":"./",
   "display":"standalone",
   "background_color":"#100b12",

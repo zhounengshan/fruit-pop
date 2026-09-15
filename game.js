@@ -15,11 +15,11 @@
     3: ['完美清屏！', '三星高手！', '无懈可击！']
   };
   const STAGES = [
-    { max: 20, name: '阳光果园', theme: 'orchard' },
-    { max: 40, name: '热带海岛', theme: 'tropic' },
-    { max: 60, name: '落日农场', theme: 'sunset' },
-    { max: 80, name: '冰雪果境', theme: 'ice' },
-    { max: 100, name: '星空果园', theme: 'space' }
+    { name: '阳光果园', theme: 'orchard' },
+    { name: '热带海岛', theme: 'tropic' },
+    { name: '落日农场', theme: 'sunset' },
+    { name: '冰雪果境', theme: 'ice' },
+    { name: '星空果园', theme: 'space' }
   ];
 
   const state = {
@@ -103,7 +103,7 @@
   }
 
   function currentStage() {
-    return STAGES.find(stage => state.level <= stage.max) || STAGES.at(-1);
+    return STAGES[Math.floor((state.level - 1) / 20) % STAGES.length];
   }
 
   function missionFor(level) {
@@ -127,7 +127,7 @@
   function load() {
     try {
       const saved = JSON.parse(localStorage.getItem('fruit-pop-progress'));
-      if (saved?.level) state.level = Math.min(100, Math.max(1, saved.level));
+      if (saved?.level) state.level = Math.max(1, Math.floor(saved.level));
       if (Number.isFinite(saved?.score)) state.score = Math.max(0, saved.score);
       state.sound = saved?.sound !== false;
       state.music = saved?.music !== false;
@@ -162,7 +162,7 @@
       return;
     }
     const stageNumber = state.level / 10;
-    const maxHp = 8 + stageNumber;
+    const maxHp = Math.min(36, 8 + stageNumber);
     const fruit = (stageNumber - 1) % typeCount(state.level);
     state.boss = { maxHp, hp: maxHp, fruit, name: `第${stageNumber}号水果巨兽` };
   }
@@ -344,7 +344,7 @@
     document.body.dataset.theme = stage.theme;
     document.body.classList.toggle('fever', state.feverMoves > 0);
     el.stageName.textContent = `${stage.name} · 第${Math.ceil(state.level / 10)}阶段`;
-    el.level.textContent = `${state.level} / 100`;
+    el.level.textContent = `第 ${state.level} 关`;
     el.score.textContent = state.score.toLocaleString();
     el.target.textContent = state.target.toLocaleString();
     el.roundScore.textContent = state.roundScore.toLocaleString();
@@ -642,18 +642,18 @@
         state.starsByLevel[state.level] = stars;
         state.totalStars += stars - previousStars;
       }
-      const finalLevel = state.level === 100;
       const milestone = state.level % 10 === 0;
+      const century = state.level % 100 === 0;
       const pool = ENCOURAGEMENTS[stars];
       const cheer = pool[Math.floor(Math.random() * pool.length)];
-      successTone(finalLevel || milestone);
-      el.modalIcon.textContent = finalLevel ? '🏆' : milestone ? '🎁' : stars === 3 ? '👑' : '🎉';
-      el.modalTitle.textContent = finalLevel ? '100关全部通关！' : milestone ? `Boss关胜利！` : cheer;
-      el.modalText.textContent = finalLevel
-        ? `共获得 ${state.totalStars} 颗星，你是最强水果达人！`
+      successTone(milestone);
+      el.modalIcon.textContent = century ? '🏆' : milestone ? '🎁' : stars === 3 ? '👑' : '🎉';
+      el.modalTitle.textContent = century ? `突破第${state.level}关！` : milestone ? 'Boss关胜利！' : cheer;
+      el.modalText.textContent = century
+        ? `无限挑战继续，共获得 ${state.totalStars} 颗星！`
         : `${milestone ? '水果巨兽已被击败！' : `本页剩余 ${state.remaining} 个水果。`} 本关获得 ${stars} 颗星。`;
-      el.modalAction.textContent = finalLevel ? '从第1关再战' : '下一关';
-      if (milestone || finalLevel || stars === 3) celebrate();
+      el.modalAction.textContent = '下一关';
+      if (milestone || stars === 3) celebrate();
     } else {
       el.modalIcon.textContent = state.boss && state.boss.hp > 0 ? '👾' : '🍎';
       el.modalTitle.textContent = '差一点，再试一次！';
@@ -684,10 +684,7 @@
     const win = el.modalAction.dataset.win === '1';
     el.modal.hidden = true;
     if (win) {
-      if (state.level === 100) {
-        state.level = 1;
-        state.score = 0;
-      } else state.level++;
+      state.level++;
       state.levelStartScore = state.score;
       save(state.score);
     } else state.score = state.levelStartScore;
