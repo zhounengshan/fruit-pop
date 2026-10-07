@@ -4,10 +4,10 @@
   const FRUITS = ['🍎', '🍊', '🍋', '🥝', '🍇'];
   const FRUIT_NAMES = ['红苹果', '橙子', '柠檬', '猕猴桃', '葡萄'];
   const BOMB = 5;
-  const RAINBOW = 6;
+  const SUPER_BOMB = 6;
   const SPECIALS = {
-    [BOMB]: { icon: '💣', name: '炸弹果' },
-    [RAINBOW]: { icon: '🌈', name: '彩虹果' }
+    [BOMB]: { icon: '😈', name: '魔鬼水果炸弹' },
+    [SUPER_BOMB]: { icon: '👹', name: '超级魔鬼炸弹' }
   };
   const ENCOURAGEMENTS = {
     1: ['顺利过关！', '继续前进！', '节奏不错！'],
@@ -211,7 +211,7 @@
     makeBoard();
     render();
     if (!musicPlayer.paused) syncMusicTrack(true);
-    el.tip.textContent = state.confirmTap ? '首次点选预览，第二次确认消除' : '点击两个或更多相邻的同类水果';
+    el.tip.textContent = state.confirmTap ? '首次点选预览，第二次确认消除' : '连消10个得😈炸弹，20个得👹超级炸弹';
   }
 
   function groupAt(row, col) {
@@ -278,19 +278,18 @@
   function actionAt(row, col) {
     const type = state.board[row]?.[col];
     if (type === BOMB) {
-      const rainbow = adjacentSpecial(row, col, RAINBOW);
-      if (rainbow) return { cells: [[row, col], rainbow], type, comboType: 'bomb-rainbow', transform: fruitCells(mostCommonFruit()), label: '炸弹＋彩虹：批量变炸弹', scoreCount: 2 };
+      const superBomb = adjacentSpecial(row, col, SUPER_BOMB);
+      if (superBomb) return { cells: cellsAround([[row, col], superBomb], 3), type, comboType: 'devil-super', label: '魔鬼＋超级：末日爆破' };
       const secondBomb = adjacentSpecial(row, col, BOMB);
-      if (secondBomb) return { cells: cellsAround([[row, col], secondBomb], 2), type, comboType: 'bomb-bomb', label: '双炸弹大爆破' };
-      return { cells: cellsAround([[row, col]], 1), type, label: '炸弹果爆破' };
+      if (secondBomb) return { cells: cellsAround([[row, col], secondBomb], 2), type, comboType: 'devil-devil', label: '双魔鬼大爆破' };
+      return { cells: cellsAround([[row, col]], 1), type, label: '魔鬼炸弹爆破' };
     }
-    if (type === RAINBOW) {
-      const secondRainbow = adjacentSpecial(row, col, RAINBOW);
-      if (secondRainbow) return { cells: allCells(), type, comboType: 'rainbow-rainbow', label: '双彩虹全屏清除' };
+    if (type === SUPER_BOMB) {
+      const secondSuper = adjacentSpecial(row, col, SUPER_BOMB);
+      if (secondSuper) return { cells: allCells(), type, comboType: 'super-super', label: '双超级魔鬼：全屏毁灭' };
       const bomb = adjacentSpecial(row, col, BOMB);
-      if (bomb) return { cells: [[row, col], bomb], type, comboType: 'bomb-rainbow', transform: fruitCells(mostCommonFruit()), label: '彩虹＋炸弹：批量变炸弹', scoreCount: 2 };
-      const targetType = mostCommonFruit();
-      return { cells: [[row, col], ...fruitCells(targetType)], type, label: `彩虹果清除${FRUIT_NAMES[targetType]}` };
+      if (bomb) return { cells: cellsAround([[row, col], bomb], 3), type, comboType: 'devil-super', label: '超级＋魔鬼：末日爆破' };
+      return { cells: cellsAround([[row, col]], 2), type, label: '超级魔鬼爆破' };
     }
     const cells = groupAt(row, col);
     return { cells, type, label: `连消 ${cells.length} 个` };
@@ -300,7 +299,7 @@
     for (let row = 0; row < state.rows; row++) {
       for (let col = 0; col < state.cols; col++) {
         const type = state.board[row][col];
-        if (type === BOMB || type === RAINBOW || groupAt(row, col).length >= 2) return true;
+        if (type === BOMB || type === SUPER_BOMB || groupAt(row, col).length >= 2) return true;
       }
     }
     return false;
@@ -326,8 +325,8 @@
       for (let col = 0; col < state.cols; col++) {
         const button = document.createElement('button');
         const value = state.board[row][col];
-        const isSpecial = value === BOMB || value === RAINBOW;
-        const specialClass = value === BOMB ? ' special-bomb' : value === RAINBOW ? ' special-rainbow' : '';
+        const isSpecial = value === BOMB || value === SUPER_BOMB;
+        const specialClass = value === BOMB ? ' special-devil' : value === SUPER_BOMB ? ' special-super-devil' : '';
         button.className = `cell${value == null ? ' empty' : isSpecial ? specialClass : ` type-${value}`}${selectedKeys.has(`${row},${col}`) ? ' selected' : ''}`;
         button.dataset.r = row;
         button.dataset.c = col;
@@ -452,7 +451,6 @@
     state.locked = true;
     const gain = actionGain(action);
     const removedValues = action.cells.map(([row, col]) => state.board[row]?.[col]).filter(value => value != null);
-    const feverWasActive = state.feverMoves > 0;
     updateCombo();
     state.roundScore += gain;
     state.score += gain;
@@ -465,17 +463,9 @@
     });
 
     let createdSpecial = null;
-    if (action.comboType === 'bomb-rainbow') {
-      action.transform.forEach(([row, col]) => {
-        if (state.board[row]?.[col] != null) state.board[row][col] = BOMB;
-      });
-      state.specialsCreated += action.transform.length;
-    } else if (action.type < BOMB) {
-      const feverBonus = feverWasActive || state.feverMoves > 0;
-      const rainbowThreshold = feverBonus ? 14 : 20;
-      const bombThreshold = feverBonus ? 6 : 10;
-      if (action.cells.length >= rainbowThreshold) createdSpecial = RAINBOW;
-      else if (action.cells.length >= bombThreshold) createdSpecial = BOMB;
+    if (action.type < BOMB) {
+      if (action.cells.length >= 20) createdSpecial = SUPER_BOMB;
+      else if (action.cells.length >= 10) createdSpecial = BOMB;
       if (createdSpecial != null) {
         state.board[originRow][originCol] = createdSpecial;
         state.specialsCreated++;
@@ -525,8 +515,8 @@
     }
     if (state.combo >= 3) label += ` · ${state.combo}连击`;
     if (state.feverMoves === 5) label += ' · 狂热启动';
-    if (createdSpecial === BOMB) label += ' · 生成炸弹';
-    if (createdSpecial === RAINBOW) label += ' · 生成彩虹';
+    if (createdSpecial === BOMB) label += ' · 😈魔鬼炸弹';
+    if (createdSpecial === SUPER_BOMB) label += ' · 👹超级魔鬼炸弹';
     if (bossDamage > 0) label += ` · Boss-${bossDamage}`;
     el.combo.textContent = `${label}  +${gain}`;
     el.combo.classList.remove('show');
@@ -541,11 +531,13 @@
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     const fruit = action.type < BOMB ? FRUITS[action.type] : SPECIALS[action.type]?.icon || '✨';
-    const particleCount = Math.min(14, Math.max(5, action.cells.length));
+    const particleCount = action.type === SUPER_BOMB || action.comboType === 'super-super'
+      ? 28
+      : action.type === BOMB || action.comboType ? 20 : Math.min(16, Math.max(5, action.cells.length));
     for (let index = 0; index < particleCount; index++) {
       const particle = document.createElement('i');
       const angle = Math.PI * 2 * index / particleCount + Math.random() * .35;
-      const distance = 42 + Math.random() * 72;
+      const distance = 48 + Math.random() * (action.type >= BOMB ? 130 : 78);
       particle.className = 'fruit-particle';
       particle.textContent = index % 3 === 0 ? '✨' : fruit;
       particle.style.left = `${x}px`;
@@ -567,6 +559,14 @@
       void el.board.offsetWidth;
       el.board.classList.add('impact');
       setTimeout(() => el.board.classList.remove('impact'), 380);
+    }
+    if (action.type >= BOMB || action.comboType) {
+      const wave = document.createElement('i');
+      wave.className = `blast-wave${action.type === SUPER_BOMB || action.comboType === 'super-super' ? ' super' : ''}`;
+      wave.style.left = `${x}px`;
+      wave.style.top = `${y}px`;
+      document.body.appendChild(wave);
+      setTimeout(() => wave.remove(), 720);
     }
   }
 
@@ -716,7 +716,7 @@
     save(state.levelStartScore);
     if (state.music) startMusic(); else stopMusic();
     render();
-    el.tip.textContent = state.confirmTap ? '首次点选预览，第二次确认消除' : '点击两个或更多相邻的同类水果';
+    el.tip.textContent = state.confirmTap ? '首次点选预览，第二次确认消除' : '连消10个得😈炸弹，20个得👹超级炸弹';
   }
 
   function ensureAudio() {
