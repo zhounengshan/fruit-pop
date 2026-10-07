@@ -589,7 +589,7 @@
       const values = [];
       for (let row = state.rows - 1; row >= 0; row--) if (state.board[row][col] != null) values.push([state.board[row][col], state.locks[row][col]]);
       for (let row = state.rows - 1, index = 0; row >= 0; row--, index++) {
-        const pair = values[index++];
+        const pair = values[index];
         state.board[row][col] = pair?.[0] ?? null;
         state.locks[row][col] = pair?.[1] ?? null;
       }
@@ -983,6 +983,6 @@
   });
   document.addEventListener('pointerdown', startMusic, { once: true });
 
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=12'));
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=13'));
   load();
 })();
