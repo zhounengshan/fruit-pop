@@ -100,6 +100,18 @@ button { font: inherit; color: inherit; }
 .cell.type-4 { background: linear-gradient(145deg, #d784ff, #962de0 58%, #52108c); border-color: #f5ddff; box-shadow: 0 5px 0 #38045f, inset 0 -6px 10px #35005844; }
 .cell.special-devil { background: radial-gradient(circle at 35% 30%, #ffef62, #ff4d20 43%, #750016 78%); border-color: #ffd56b; box-shadow: 0 4px 0 #48000c, 0 0 18px #ff4a24; animation: devilPulse .72s ease-in-out infinite alternate; }
 .cell.special-super-devil { background: conic-gradient(from 30deg, #180013, #ff164c, #ffb000, #6b003d, #180013); border-color: #fff07b; box-shadow: 0 4px 0 #2d001d, 0 0 22px #ff245d, 0 0 34px #ffb00088; animation: superDevilPulse .48s ease-in-out infinite alternate; }
+.cell.special-crate { background: linear-gradient(145deg, #b87736, #654022); border-color: #ebbc83; box-shadow: 0 4px 0 #382010; }
+.cell.special-rainbow { background: conic-gradient(#ff4268,#ffe659,#51dd75,#42bcff,#b969fa,#ff4268); border-color: #fff9d6; box-shadow: 0 4px 0 #543080, 0 0 18px #fff8; }
+.cell.locked-ice::after, .cell.locked-vine::after { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; font-size: 1.1rem; pointer-events: none; }
+.cell.locked-ice::after { content: '❄'; background: #8beaff55; border: 2px solid #bbfaff; border-radius: 12px; color: white; }
+.cell.locked-vine::after { content: '🌿'; background: #245e3699; border: 2px solid #53d06e; border-radius: 12px; }
+.progress-extra { display: flex; justify-content: space-between; padding: 0 4px 6px; color: var(--accent); font-size: .68rem; font-weight: 800; }
+.obstacle-hint { margin: 0 0 6px; padding: 5px 8px; border-radius: 9px; background: #ffffff19; font-size: .66rem; color: #e8ffe9; }
+.obstacle-hint[hidden] { display: none; }
+.collection-card { max-height: min(82dvh, 700px); overflow-y: auto; }
+.collection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 14px 0; text-align: left; }
+.collection-item { padding: 10px 7px; border: 1px solid #ffffff35; border-radius: 10px; background: #ffffff12; font-size: .76rem; }
+.collection-item.locked { color: var(--muted); background: #0003; }
 .cell:active { transform: scale(.78) translateY(3px); filter: brightness(1.22); }
 .cell.selected { transform: scale(.88); filter: brightness(1.3); outline: 4px solid var(--accent); outline-offset: -4px; animation: selectedPulse .7s ease-in-out infinite alternate; z-index: 2; }
 .cell.popping { animation: pop .34s cubic-bezier(.2,.8,.3,1) forwards; }

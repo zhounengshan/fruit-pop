@@ -22,6 +22,7 @@
         <h1>消灭水果</h1>
       </div>
       <div class="top-actions">
+        <button id="collectionBtn" class="icon-button" aria-label="查看水果图鉴和纪录">📖</button>
         <button id="musicBtn" class="icon-button" aria-label="切换背景音乐">🎵</button>
         <button id="soundBtn" class="icon-button" aria-label="切换音效">🔊</button>
         <button id="settingsBtn" class="icon-button" aria-label="打开设置">⚙️</button>
@@ -42,6 +43,8 @@
       <span>剩余 <b id="remainingText">80</b></span>
       <span>星星 <b id="starsText">0</b> ⭐</span>
     </section>
+    <div class="progress-extra"><span id="streakText">🔥 连胜 0 · 最高 0</span><span>📖 图鉴与纪录</span></div>
+    <p id="obstacleHint" class="obstacle-hint" hidden></p>
 
     <section id="missionStrip" class="mission-strip">
       <span>⭐ 本关挑战</span>
@@ -105,6 +108,16 @@
       <label class="volume-row"><span>音乐音量</span><input id="musicVolume" type="range" min="0" max="100" value="35" /></label>
       <p class="settings-note">关闭二次确认后，点击水果群会立即消除。</p>
       <button id="settingsClose" class="primary-button">保存设置</button>
+    </div>
+  </div>
+
+  <div id="collectionModal" class="modal" hidden>
+    <div class="modal-card collection-card" role="dialog" aria-modal="true" aria-labelledby="collectionTitle">
+      <div class="modal-icon">📖</div>
+      <h2 id="collectionTitle">水果图鉴与纪录</h2>
+      <p id="recordsText"></p>
+      <div id="collectionItems" class="collection-grid"></div>
+      <button id="collectionClose" class="primary-button">返回游戏</button>
     </div>
   </div>
 

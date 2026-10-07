@@ -1,7 +1,7 @@
 {
   "name":"消灭水果",
   "short_name":"消灭水果",
-  "description":"含魔鬼水果炸弹、超级爆破、原创音乐和Boss战的无限关卡水果消除游戏。",
+  "description":"无限关卡水果消除：图鉴、随机障碍、幸运奖励、个人纪录和连胜挑战。",
   "start_url":"./",
   "display":"standalone",
   "background_color":"#100b12",

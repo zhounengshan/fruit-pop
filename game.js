@@ -5,9 +5,18 @@
   const FRUIT_NAMES = ['红苹果', '橙子', '柠檬', '猕猴桃', '葡萄'];
   const BOMB = 5;
   const SUPER_BOMB = 6;
+  const CRATE = 7;
+  const RAINBOW = 8;
+  const RARE_FRUITS = [
+    { level: 25, type: 0, icon: '🍓', name: '草莓' },
+    { level: 50, type: 2, icon: '🍍', name: '菠萝' },
+    { level: 100, type: 4, icon: '🫐', name: '蓝莓' }
+  ];
   const SPECIALS = {
     [BOMB]: { icon: '😈', name: '魔鬼水果炸弹' },
-    [SUPER_BOMB]: { icon: '👹', name: '超级魔鬼炸弹' }
+    [SUPER_BOMB]: { icon: '👹', name: '超级魔鬼炸弹' },
+    [CRATE]: { icon: '📦', name: '水果箱' },
+    [RAINBOW]: { icon: '🌈', name: '幸运彩虹果' }
   };
   const ENCOURAGEMENTS = {
     1: ['顺利过关！', '继续前进！', '节奏不错！'],
@@ -49,6 +58,16 @@
     lastClearAt: 0,
     feverMoves: 0,
     specialsCreated: 0,
+    locks: [],
+    obstacle: null,
+    levelReward: null,
+    rewardChoice: null,
+    streak: 0,
+    bestStreak: 0,
+    highestLevel: 1,
+    bestCombo: 0,
+    perfectClears: 0,
+    bestSingleClear: 0,
     boss: null
   };
 
@@ -68,7 +87,10 @@
     modalBonus: $('modalBonus'), modalMission: $('modalMission'), modalScore: $('modalScore'),
     modalAction: $('modalAction'), resultStars: $('resultStars'), settingsModal: $('settingsModal'),
     musicToggle: $('musicToggle'), soundToggle: $('soundToggle'), vibrateToggle: $('vibrateToggle'),
-    confirmToggle: $('confirmToggle'), musicVolume: $('musicVolume'), settingsClose: $('settingsClose')
+    confirmToggle: $('confirmToggle'), musicVolume: $('musicVolume'), settingsClose: $('settingsClose'),
+    collection: $('collectionBtn'), collectionModal: $('collectionModal'), collectionClose: $('collectionClose'),
+    collectionItems: $('collectionItems'), records: $('recordsText'), streak: $('streakText'),
+    obstacleHint: $('obstacleHint')
   };
 
   let audio;
@@ -106,6 +128,17 @@
     return STAGES[Math.floor((state.level - 1) / 20) % STAGES.length];
   }
 
+  function fruitLook(type) {
+    const rare = RARE_FRUITS.find(item => item.type === type && state.level >= item.level);
+    return rare || { icon: FRUITS[type], name: FRUIT_NAMES[type] };
+  }
+
+  function obstacleFor(level) {
+    if (level < 12 || level % 10 === 0) return null;
+    const kinds = ['ice', 'vine', 'crate'];
+    return kinds[Math.floor((level - 12) / 3) % kinds.length];
+  }
+
   function missionFor(level) {
     const missions = [
       { id: 'lowRemain', text: '剩余不超过5个水果' },
@@ -136,6 +169,10 @@
       if (Number.isFinite(saved?.musicVolume)) state.musicVolume = Math.min(1, Math.max(0, saved.musicVolume));
       if (saved?.starsByLevel && typeof saved.starsByLevel === 'object') state.starsByLevel = saved.starsByLevel;
       state.totalStars = Object.values(state.starsByLevel).reduce((sum, value) => sum + Number(value || 0), 0);
+      for (const key of ['streak', 'bestStreak', 'highestLevel', 'bestCombo', 'perfectClears', 'bestSingleClear']) {
+        if (Number.isSafeInteger(saved?.[key]) && saved[key] >= 0) state[key] = saved[key];
+      }
+      if (['bomb', 'rainbow', 'shuffle'].includes(saved?.levelReward)) state.levelReward = saved.levelReward;
     } catch (error) {
       state.starsByLevel = {};
     }
@@ -152,7 +189,14 @@
       vibrate: state.vibrate,
       confirmTap: state.confirmTap,
       uiVersion: 4,
-      starsByLevel: state.starsByLevel
+      starsByLevel: state.starsByLevel,
+      levelReward: state.levelReward,
+      streak: state.streak,
+      bestStreak: state.bestStreak,
+      highestLevel: state.highestLevel,
+      bestCombo: state.bestCombo,
+      perfectClears: state.perfectClears,
+      bestSingleClear: state.bestSingleClear
     }));
   }
 
@@ -170,8 +214,10 @@
   function makeBoard() {
     const count = typeCount(state.level);
     state.board = [];
+    state.locks = [];
     for (let row = 0; row < state.rows; row++) {
       state.board[row] = [];
+      state.locks[row] = Array(state.cols).fill(null);
       for (let col = 0; col < state.cols; col++) {
         if (col > 0 && Math.random() < .31) state.board[row][col] = state.board[row][col - 1];
         else if (row > 0 && Math.random() < .25) state.board[row][col] = state.board[row - 1][col];
@@ -189,6 +235,25 @@
         }
       }
     }
+    if (state.obstacle) {
+      const count = Math.min(8, 2 + Math.floor(state.level / 25));
+      const candidates = [];
+      for (let row = 2; row < state.rows - 1; row++) {
+        for (let col = 0; col < state.cols; col++) candidates.push([row, col]);
+      }
+      for (let i = candidates.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+      }
+      for (const [row, col] of candidates.slice(0, count)) {
+        if (state.obstacle === 'crate') state.board[row][col] = CRATE;
+        else state.locks[row][col] = state.obstacle;
+      }
+    }
+    if (state.levelReward === 'bomb' || state.levelReward === 'rainbow') {
+      state.board[0][Math.floor(state.cols / 2)] = state.levelReward === 'bomb' ? BOMB : RAINBOW;
+      state.locks[0][Math.floor(state.cols / 2)] = null;
+    }
     if (!hasMoves()) makeBoard();
   }
 
@@ -198,7 +263,7 @@
     state.bonus = 0;
     state.remaining = 0;
     state.target = levelTarget(state.level);
-    state.shuffles = shuffleAllowance(state.level);
+    state.shuffles = shuffleAllowance(state.level) + (state.levelReward === 'shuffle' ? 2 : 0);
     state.shufflesUsed = 0;
     state.locked = false;
     state.combo = 0;
@@ -206,17 +271,20 @@
     state.lastClearAt = 0;
     state.feverMoves = 0;
     state.specialsCreated = 0;
+    state.obstacle = obstacleFor(state.level);
     clearSelection();
     setupBoss();
     makeBoard();
     render();
+    state.highestLevel = Math.max(state.highestLevel, state.level);
+    save(state.levelStartScore);
     if (!musicPlayer.paused) syncMusicTrack(true);
     el.tip.textContent = state.confirmTap ? '首次点选预览，第二次确认消除' : '连消10个得😈炸弹，20个得👹超级炸弹';
   }
 
   function groupAt(row, col) {
     const type = state.board[row]?.[col];
-    if (type == null || type >= BOMB) return [];
+    if (type == null || type >= BOMB || state.locks[row]?.[col]) return [];
     const found = [];
     const seen = new Set([`${row},${col}`]);
     const queue = [[row, col]];
@@ -225,7 +293,7 @@
       found.push([currentRow, currentCol]);
       [[currentRow - 1, currentCol], [currentRow + 1, currentCol], [currentRow, currentCol - 1], [currentRow, currentCol + 1]].forEach(([nextRow, nextCol]) => {
         const key = `${nextRow},${nextCol}`;
-        if (nextRow >= 0 && nextRow < state.rows && nextCol >= 0 && nextCol < state.cols && !seen.has(key) && state.board[nextRow][nextCol] === type) {
+        if (nextRow >= 0 && nextRow < state.rows && nextCol >= 0 && nextCol < state.cols && !seen.has(key) && state.board[nextRow][nextCol] === type && !state.locks[nextRow][nextCol]) {
           seen.add(key);
           queue.push([nextRow, nextCol]);
         }
@@ -277,6 +345,11 @@
 
   function actionAt(row, col) {
     const type = state.board[row]?.[col];
+    if (type === RAINBOW) {
+      const target = mostCommonFruit();
+      return { cells: [[row, col], ...fruitCells(target)], type, label: `幸运彩虹清除${fruitLook(target).name}` };
+    }
+    if (type === CRATE || state.locks[row]?.[col]) return { cells: [], type, label: '先消除旁边的水果来解锁' };
     if (type === BOMB) {
       const superBomb = adjacentSpecial(row, col, SUPER_BOMB);
       if (superBomb) return { cells: cellsAround([[row, col], superBomb], 3), type, comboType: 'devil-super', label: '魔鬼＋超级：末日爆破' };
@@ -299,7 +372,7 @@
     for (let row = 0; row < state.rows; row++) {
       for (let col = 0; col < state.cols; col++) {
         const type = state.board[row][col];
-        if (type === BOMB || type === SUPER_BOMB || groupAt(row, col).length >= 2) return true;
+        if (type === BOMB || type === SUPER_BOMB || type === RAINBOW || groupAt(row, col).length >= 2) return true;
       }
     }
     return false;
@@ -325,15 +398,17 @@
       for (let col = 0; col < state.cols; col++) {
         const button = document.createElement('button');
         const value = state.board[row][col];
-        const isSpecial = value === BOMB || value === SUPER_BOMB;
-        const specialClass = value === BOMB ? ' special-devil' : value === SUPER_BOMB ? ' special-super-devil' : '';
-        button.className = `cell${value == null ? ' empty' : isSpecial ? specialClass : ` type-${value}`}${selectedKeys.has(`${row},${col}`) ? ' selected' : ''}`;
+        const isSpecial = value != null && value >= BOMB;
+        const specialClass = value === BOMB ? ' special-devil' : value === SUPER_BOMB ? ' special-super-devil' : value === CRATE ? ' special-crate' : value === RAINBOW ? ' special-rainbow' : '';
+        const lock = state.locks[row]?.[col];
+        button.className = `cell${value == null ? ' empty' : isSpecial ? specialClass : ` type-${value}`}${lock ? ` locked-${lock}` : ''}${selectedKeys.has(`${row},${col}`) ? ' selected' : ''}`;
         button.dataset.r = row;
         button.dataset.c = col;
         button.setAttribute('role', 'gridcell');
-        const name = value == null ? '空格' : isSpecial ? SPECIALS[value].name : FRUIT_NAMES[value];
-        const icon = value == null ? '' : isSpecial ? SPECIALS[value].icon : FRUITS[value];
-        button.setAttribute('aria-label', name);
+        const look = !isSpecial && value != null ? fruitLook(value) : null;
+        const name = value == null ? '空格' : isSpecial ? SPECIALS[value].name : look.name;
+        const icon = value == null ? '' : isSpecial ? SPECIALS[value].icon : look.icon;
+        button.setAttribute('aria-label', lock ? `${lock === 'ice' ? '冰冻' : '藤蔓锁住'}的${name}` : name);
         button.innerHTML = icon ? `<span class="fruit">${icon}</span>` : '';
         fragment.appendChild(button);
       }
@@ -350,6 +425,11 @@
     el.gap.textContent = Math.max(0, state.target - state.score).toLocaleString();
     el.remaining.textContent = remainingCount();
     el.stars.textContent = state.totalStars;
+    el.streak.textContent = `🔥 连胜 ${state.streak} · 最高 ${state.bestStreak}`;
+    el.obstacleHint.textContent = state.obstacle === 'ice' ? '🧊 冰冻水果：消除旁边一组来破冰'
+      : state.obstacle === 'vine' ? '🌿 藤蔓锁：消除旁边一组来解锁'
+      : state.obstacle === 'crate' ? '📦 水果箱：消除旁边一组或用炸弹打开' : '';
+    el.obstacleHint.hidden = !state.obstacle;
     el.progress.style.width = `${Math.min(100, state.score / state.target * 100)}%`;
     el.shuffleCount.textContent = `${state.shuffles} 次`;
     el.shuffle.disabled = state.shuffles <= 0;
@@ -410,11 +490,11 @@
     const row = Number(button.dataset.r);
     const col = Number(button.dataset.c);
     const action = actionAt(row, col);
-    if (action.cells.length < 2 && action.type < BOMB) {
+    if (action.cells.length < 2 && ![BOMB, SUPER_BOMB, RAINBOW].includes(action.type)) {
       clearSelection();
       render();
       buzz(80);
-      el.tip.textContent = '至少要有两个相邻的同类水果';
+      el.tip.textContent = action.type === CRATE || state.locks[row]?.[col] ? '消除旁边的水果，或使用炸弹打开障碍' : '至少要有两个相邻的同类水果';
       return;
     }
     if (state.confirmTap && !sameSelection(row, col)) {
@@ -449,6 +529,22 @@
 
   function executeAction(action, originRow, originCol) {
     state.locked = true;
+    const originalCount = action.cells.filter(([row, col]) => state.board[row]?.[col] < BOMB).length;
+    const removedKeys = new Set(action.cells.map(([row, col]) => `${row},${col}`));
+    if (action.type < BOMB) {
+      for (const [row, col] of action.cells) {
+        for (const [nr, nc] of [[row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]]) {
+          if (nr < 0 || nr >= state.rows || nc < 0 || nc >= state.cols || removedKeys.has(`${nr},${nc}`)) continue;
+          if (state.locks[nr][nc]) state.locks[nr][nc] = null;
+          else if (state.board[nr][nc] === CRATE) {
+            removedKeys.add(`${nr},${nc}`);
+            action.cells.push([nr, nc]);
+          }
+        }
+      }
+      action.scoreCount = originalCount;
+    }
+    state.bestSingleClear = Math.max(state.bestSingleClear, originalCount);
     const gain = actionGain(action);
     const removedValues = action.cells.map(([row, col]) => state.board[row]?.[col]).filter(value => value != null);
     updateCombo();
@@ -460,19 +556,22 @@
       const node = el.board.children[row * state.cols + col];
       node?.classList.add('popping');
       state.board[row][col] = null;
+      state.locks[row][col] = null;
     });
 
     let createdSpecial = null;
     if (action.type < BOMB) {
-      if (action.cells.length >= 20) createdSpecial = SUPER_BOMB;
-      else if (action.cells.length >= 10) createdSpecial = BOMB;
+      if (originalCount >= 20) createdSpecial = SUPER_BOMB;
+      else if (originalCount >= 10) createdSpecial = BOMB;
       if (createdSpecial != null) {
         state.board[originRow][originCol] = createdSpecial;
+        state.locks[originRow][originCol] = null;
         state.specialsCreated++;
       }
     }
 
     const bossDamage = damageBoss(removedValues);
+    state.bestCombo = Math.max(state.bestCombo, state.maxCombo);
     clearSelection();
     showCombo(action, gain, createdSpecial, bossDamage);
     tone(action.cells.length, action.type >= BOMB || Boolean(action.comboType));
@@ -488,8 +587,12 @@
   function collapse() {
     for (let col = 0; col < state.cols; col++) {
       const values = [];
-      for (let row = state.rows - 1; row >= 0; row--) if (state.board[row][col] != null) values.push(state.board[row][col]);
-      for (let row = state.rows - 1, index = 0; row >= 0; row--, index++) state.board[row][col] = index < values.length ? values[index] : null;
+      for (let row = state.rows - 1; row >= 0; row--) if (state.board[row][col] != null) values.push([state.board[row][col], state.locks[row][col]]);
+      for (let row = state.rows - 1, index = 0; row >= 0; row--, index++) {
+        const pair = values[index++];
+        state.board[row][col] = pair?.[0] ?? null;
+        state.locks[row][col] = pair?.[1] ?? null;
+      }
     }
     let writeCol = 0;
     for (let col = 0; col < state.cols; col++) {
@@ -499,6 +602,8 @@
         for (let row = 0; row < state.rows; row++) {
           state.board[row][writeCol] = state.board[row][col];
           state.board[row][col] = null;
+          state.locks[row][writeCol] = state.locks[row][col];
+          state.locks[row][col] = null;
         }
       }
       writeCol++;
@@ -595,21 +700,30 @@
     startMusic();
     if (state.locked || state.shuffles <= 0) return;
     clearSelection();
-    const values = state.board.flat().filter(value => value != null);
+    const values = [];
+    for (let row = 0; row < state.rows; row++) for (let col = 0; col < state.cols; col++) {
+      if (state.board[row][col] != null) values.push([state.board[row][col], state.locks[row][col]]);
+    }
     for (let index = values.length - 1; index > 0; index--) {
       const target = Math.floor(Math.random() * (index + 1));
       [values[index], values[target]] = [values[target], values[index]];
     }
     let index = 0;
     for (let row = state.rows - 1; row >= 0; row--) {
-      for (let col = 0; col < state.cols; col++) state.board[row][col] = index < values.length ? values[index++] : null;
+      for (let col = 0; col < state.cols; col++) {
+        const pair = values[index++];
+        state.board[row][col] = pair?.[0] ?? null;
+        state.locks[row][col] = pair?.[1] ?? null;
+      }
     }
     state.shuffles--;
     state.shufflesUsed++;
     if (!hasMoves() && values.length > 1) {
-      const firstStandard = values.find(value => value < BOMB) ?? 0;
+      const firstStandard = values.find(pair => pair[0] < BOMB)?.[0] ?? 0;
       state.board[state.rows - 1][0] = firstStandard;
       state.board[state.rows - 1][1] = firstStandard;
+      state.locks[state.rows - 1][0] = null;
+      state.locks[state.rows - 1][1] = null;
     }
     buzz(45);
     render();
@@ -627,6 +741,19 @@
 
   function showResult(win) {
     state.locked = true;
+    if (win) {
+      if (state.remaining === 0) state.perfectClears++;
+      state.streak++;
+      state.bestStreak = Math.max(state.bestStreak, state.streak);
+      const streakBonus = Math.min(state.streak, 10) * 50;
+      state.bonus += streakBonus;
+      state.score += streakBonus;
+      state.rewardChoice = state.level % 10 === 0
+        ? ['bomb', 'rainbow', 'shuffle'][Math.floor(Math.random() * 3)] : null;
+    } else {
+      state.streak = 0;
+      state.rewardChoice = null;
+    }
     const stars = starRating(win);
     const challengeDone = missionComplete(true);
     el.modal.hidden = false;
@@ -652,6 +779,11 @@
       el.modalText.textContent = century
         ? `无限挑战继续，共获得 ${state.totalStars} 颗星！`
         : `${milestone ? '水果巨兽已被击败！' : `本页剩余 ${state.remaining} 个水果。`} 本关获得 ${stars} 颗星。`;
+      el.modalText.textContent += ` 连胜${state.streak}关，奖励${Math.min(state.streak, 10) * 50}分。`;
+      if (state.rewardChoice) {
+        const prize = { bomb: '😈魔鬼炸弹', rainbow: '🌈幸运彩虹', shuffle: '🔀额外2次重排' }[state.rewardChoice];
+        el.modalText.textContent += ` 幸运抽奖：下一关获得${prize}！`;
+      }
       el.modalAction.textContent = '下一关';
       if (milestone || stars === 3) celebrate();
     } else {
@@ -665,6 +797,7 @@
       el.modalAction.textContent = '重新挑战';
     }
     el.modalAction.dataset.win = win ? '1' : '0';
+    save(state.levelStartScore);
   }
 
   function celebrate() {
@@ -685,6 +818,8 @@
     el.modal.hidden = true;
     if (win) {
       state.level++;
+      state.levelReward = state.rewardChoice;
+      state.rewardChoice = null;
       state.levelStartScore = state.score;
       save(state.score);
     } else state.score = state.levelStartScore;
@@ -694,6 +829,23 @@
   function restartLevel() {
     state.score = state.levelStartScore;
     startLevel();
+  }
+
+  function showCollection() {
+    const items = [
+      ...FRUITS.map((icon, index) => ({ level: 1, icon, name: FRUIT_NAMES[index] })),
+      ...RARE_FRUITS,
+      ...STAGES.map((stage, index) => ({ level: index * 20 + 1, icon: ['🌳','🏝️','🌅','❄️','🌌'][index], name: stage.name }))
+    ];
+    el.collectionItems.replaceChildren(...items.map(item => {
+      const card = document.createElement('div');
+      const unlocked = state.highestLevel >= item.level;
+      card.className = `collection-item${unlocked ? '' : ' locked'}`;
+      card.textContent = unlocked ? `${item.icon} ${item.name}` : `🔒 第${item.level}关解锁`;
+      return card;
+    }));
+    el.records.textContent = `最高第${state.highestLevel}关 · 最大${state.bestCombo}连击 · 完美清屏${state.perfectClears}次 · 单次最多消除${state.bestSingleClear}个 · 最长连胜${state.bestStreak}关`;
+    el.collectionModal.hidden = false;
   }
 
   function openSettings() {
@@ -813,6 +965,8 @@
   el.modalAction.addEventListener('click', modalAction);
   el.settings.addEventListener('click', openSettings);
   el.settingsClose.addEventListener('click', closeSettings);
+  el.collection.addEventListener('click', showCollection);
+  el.collectionClose.addEventListener('click', () => { el.collectionModal.hidden = true; });
   el.musicVolume.addEventListener('input', () => { state.musicVolume = Number(el.musicVolume.value) / 100; });
   el.music.addEventListener('click', () => {
     state.music = !state.music;
