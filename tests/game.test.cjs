@@ -20,7 +20,7 @@ function boot(saved = {}, failStorage = false) {
     Audio:class {paused=true;play(){return Promise.resolve();}pause(){}},
     setTimeout(fn,delay){timers.push({fn,delay});}};
   const source = fs.readFileSync(require.resolve('../game.js'),'utf8').replace('  load();',
-    '  globalThis.testGame = {state, el, startLevel, load, save, actionAt, expandChain, executeAction, collapse, refillBoard, hasMoves, checkState, finishRound, modalAction, remainingCount, goalWon, fruitPool, showCollection, BOMB, SUPER_BOMB, ROCKET, RAINBOW, CRATE}; load();');
+    '  globalThis.testGame = {state, el, startLevel, load, save, actionAt, expandChain, executeAction, collapse, refillBoard, hasMoves, checkState, finishRound, modalAction, remainingCount, goalWon, fruitPool, fruitTone, render, FRUIT_MARKS, showCollection, BOMB, SUPER_BOMB, ROCKET, RAINBOW, CRATE}; load();');
   vm.runInNewContext(source,context);
   const api = context.testGame;
   api.state.sound = api.state.music = false;
@@ -38,12 +38,29 @@ for(let level=1;level<=1000;level++){
   assert.equal(g.remainingCount(),80);
   assert.ok(g.hasMoves());
   assert.ok(g.state.pool.length>=4&&g.state.pool.length<=6);
+  assert.equal(new Set(g.state.pool.map(g.fruitTone)).size,g.state.pool.length);
+  assert.equal(new Set(g.state.pool.map(type=>g.FRUIT_MARKS[g.fruitTone(type)])).size,g.state.pool.length);
+  for(const cell of g.el.board.children){
+    if(cell.dataset.type!==''&&Number(cell.dataset.type)<100){
+      const tone=g.fruitTone(Number(cell.dataset.type));
+      assert.ok(cell.className.includes(`tone-${tone}`));
+      assert.ok(cell.innerHTML.includes(g.FRUIT_MARKS[tone]));
+    }
+  }
   for(const type of g.state.board.flat())assert.ok(type>=100||g.state.pool.includes(type));
   if(g.state.goal.kind==='rescue')assert.equal(g.state.board.flat().filter(v=>v===g.CRATE).length,g.state.goal.target);
   if(g.state.goal.kind==='boss')assert.ok(g.state.pool.includes(g.state.boss.fruit));
 }
 const late=new Set();for(let level=201;level<=260;level++)for(const v of g.fruitPool(level))late.add(v);
 assert.equal(late.size,20);
+const css=fs.readFileSync(require.resolve('../style.css'),'utf8');
+const palette=Array.from(css.matchAll(/\.tone-(\d) \{ --fruit-bg:(#[0-9a-f]{6});/g));
+assert.equal(palette.length,6);assert.equal(new Set(palette.map(m=>m[2])).size,6);
+assert.ok(!/\.cell\.type-\d+[^\n]*background/.test(css));
+// Colours and markers remain attached to the pool through replenishment and render.
+g.state.level=403;g.startLevel();const before=Array.from(g.state.pool,type=>[type,g.fruitTone(type)]);
+g.state.board[0][0]=null;g.refillBoard();g.render();
+assert.deepEqual(Array.from(g.state.pool,type=>[type,g.fruitTone(type)]),before);
 // Collapse conserves all remaining tile/lock pairs, including formerly-special IDs 5..8.
 g.state.level=1;g.startLevel();empty(g);
 for(let r=0;r<10;r++){g.state.board[r][0]=r;g.state.locks[r][0]=r%2?'ice':null;}
