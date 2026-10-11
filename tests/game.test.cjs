@@ -55,6 +55,12 @@ assert.equal(late.size,20);
 const css=fs.readFileSync(require.resolve('../style.css'),'utf8');
 const palette=Array.from(css.matchAll(/\.tone-(\d) \{ --fruit-bg:(#[0-9a-f]{6});/g));
 assert.equal(palette.length,6);assert.equal(new Set(palette.map(m=>m[2])).size,6);
+// Tile surfaces must stay muted and dark, including the formerly white coconut.
+for(const [, , hex] of palette){
+  const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
+  assert.ok(Math.max(...rgb)<=85,'No bright tile background');
+  assert.ok(Math.max(...rgb)-Math.min(...rgb)<=40,'No saturated tile background');
+}
 assert.ok(!/\.cell\.type-\d+[^\n]*background/.test(css));
 assert.ok(!css.includes('.fruit-mark'));
 const html=fs.readFileSync(require.resolve('../index.html'),'utf8');

@@ -20,15 +20,15 @@
 .goal-footer strong { font-size:.78rem; color:var(--accent); white-space:nowrap; }
 .control-button[aria-pressed="true"] { border-color:var(--accent); background:#ffd84d33; }
 .cell.special-rocket { background:linear-gradient(135deg,#2843a7,#35b8e0); box-shadow:inset 0 0 12px #adf4ff88; }
-.tone-0 { --fruit-bg:#a82343; --fruit-edge:#f69cb0; }
-.tone-1 { --fruit-bg:#f3ce46; --fruit-edge:#fff0a2; }
-.tone-2 { --fruit-bg:#167c68; --fruit-edge:#8ae5c5; }
-.tone-3 { --fruit-bg:#2258b7; --fruit-edge:#98c4ff; }
-.tone-4 { --fruit-bg:#7643a1; --fruit-edge:#d8aff7; }
-.tone-5 { --fruit-bg:#edf1f7; --fruit-edge:#fff; }
-.cell.fruit-tile { background:var(--fruit-bg,#334155); border-color:var(--fruit-edge,#fff); box-shadow:0 3px 0 #090b1880; }
+.tone-0 { --fruit-bg:#49343b; --fruit-edge:#70505a; }
+.tone-1 { --fruit-bg:#494333; --fruit-edge:#71664d; }
+.tone-2 { --fruit-bg:#2f453d; --fruit-edge:#4e6b5f; }
+.tone-3 { --fruit-bg:#324253; --fruit-edge:#51687e; }
+.tone-4 { --fruit-bg:#42394f; --fruit-edge:#655675; }
+.tone-5 { --fruit-bg:#45494b; --fruit-edge:#696f72; }
+.cell.fruit-tile { background:var(--fruit-bg,#334155); border:1px solid var(--fruit-edge,#64748b); box-shadow:none; }
 .cell.fruit-tile::before { display:none; }
-.cell.fruit-tile .fruit { font-size:.95em; transform:translateY(0); filter:drop-shadow(0 2px 1px #0004); text-shadow:none; }
+.cell.fruit-tile .fruit { font-size:.95em; transform:translateY(0); filter:saturate(.85) drop-shadow(0 1px 1px #0003); text-shadow:none; }
 .modal-card.help-card { text-align:left; }
 .help-card h2,.help-card .modal-icon { text-align:center; }
 .help-rules dt { color:var(--accent); font-size:.82rem; font-weight:800; margin-top:12px; }
@@ -226,6 +226,17 @@ body.fever .board { box-shadow: inset 0 1px #ffffff1e, 0 0 28px #ff7b3766, 0 18p
 .goal-card .progress-track { margin:0; height:5px; }
 .board { border-radius:20px; padding:8px; gap:5px; box-shadow:inset 0 1px #ffffff20,0 8px 24px #0003; }
 .cell { border-radius:11px; }
+.cell.selected { filter:brightness(1.1); outline:2px solid #dbc89b; outline-offset:-2px; animation:none; }
+.cell:active { filter:brightness(1.1); }
+/* Quiet surfaces keep the fruit silhouettes, not a luminous grid, in focus. */
+body { background:linear-gradient(180deg,#282b32,var(--bg) 80%); }
+body::before { display:none; }
+.board { background:#24282e; border:1px solid #434850; box-shadow:none; }
+.cell.special-crate { background:#574634; border:1px solid #847157; box-shadow:none; }
+.cell.special-rocket { background:#334b5a; border:1px solid #678a9d; box-shadow:none; }
+.cell.special-devil { background:#643b34; border:1px solid #a77c60; box-shadow:none; animation:none; }
+.cell.special-super-devil { background:#603448; border:1px solid #aa7b89; box-shadow:none; animation:none; }
+.cell.special-rainbow { background:conic-gradient(#775365,#887b4e,#4d7962,#4d6a87,#6e5781,#775365); border:1px solid #a79aaf; box-shadow:none; }
 .controls { margin-top:14px; gap:12px; }
 .controls .control-button { display:flex; justify-content:center; align-items:center; gap:8px; padding:12px; min-height:48px; box-shadow:none; }
 .controls .control-button b { font-size:.85rem; }
