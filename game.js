@@ -4,6 +4,9 @@
   const FRUITS = ['🍎','🍊','🍋','🥝','🍇','🍓','🍌','🍉','🍍','🍑','🍒','🥭','🫐','🍐','🥥','🍈','🍏','🍅','🥑','🫒'];
   const FRUIT_NAMES = ['红苹果','橙子','柠檬','猕猴桃','葡萄','草莓','香蕉','西瓜','菠萝','桃子','樱桃','芒果','蓝莓','梨','椰子','蜜瓜','青苹果','番茄','牛油果','橄榄'];
   const UNLOCK_LEVELS = [1,1,1,1,1,5,10,15,20,30,40,50,65,80,100,120,140,160,180,200];
+  // Assign a unique colour and shape to each fruit in the current board's pool.
+  // Never derive colour from fruit ID: late-game fruit IDs would share colours.
+  const FRUIT_MARKS = ['●', '▲', '■', '◆', '＋', '≡'];
   const BOMB = 100;
   const SUPER_BOMB = 101;
   const CRATE = 102;
@@ -91,7 +94,7 @@
     collection: $('collectionBtn'), collectionModal: $('collectionModal'), collectionClose: $('collectionClose'),
     collectionItems: $('collectionItems'), records: $('recordsText'), streak: $('streakText'),
     obstacleHint: $('obstacleHint'), goalTitle: $('goalTitle'), goalText: $('goalText'),
-    goalProgress: $('goalProgress'), moves: $('movesText'), fruitLine: $('fruitLine'),
+    goalProgress: $('goalProgress'), moves: $('movesText'), fruitLine: $('fruitLine'), fruitUnlock: $('fruitUnlock'),
     hammer: $('hammerBtn'), hammerCount: $('hammerCount'), help: $('helpBtn'),
     helpModal: $('helpModal'), helpClose: $('helpClose'), settle: $('settleBtn')
   };
@@ -125,6 +128,8 @@
   function randomFruit() {
     return state.pool[Math.floor(Math.random() * state.pool.length)];
   }
+
+  function fruitTone(type) { return state.pool.indexOf(type); }
 
   function goalFor(level) {
     const tier = Math.min(8, Math.floor(level / 30));
@@ -504,7 +509,8 @@
         const isSpecial = value != null && value >= BOMB;
         const specialClass = value === BOMB ? ' special-devil' : value === SUPER_BOMB ? ' special-super-devil' : value === CRATE ? ' special-crate' : value === RAINBOW ? ' special-rainbow' : value === ROCKET ? ' special-rocket' : '';
         const lock = state.locks[row]?.[col];
-        button.className = `cell${value == null ? ' empty' : isSpecial ? specialClass : ` type-${value}`}${lock ? ` locked-${lock}` : ''}${selectedKeys.has(`${row},${col}`) ? ' selected' : ''}`;
+        const tone = !isSpecial && value != null ? fruitTone(value) : -1;
+        button.className = `cell${value == null ? ' empty' : isSpecial ? specialClass : ` type-${value} fruit-tile tone-${tone}`}${lock ? ` locked-${lock}` : ''}${selectedKeys.has(`${row},${col}`) ? ' selected' : ''}`;
         button.dataset.r = row;
         button.dataset.c = col;
         button.dataset.type = value == null ? '' : value;
@@ -513,7 +519,7 @@
         const name = value == null ? '空格' : isSpecial ? SPECIALS[value].name : look.name;
         const icon = value == null ? '' : isSpecial ? SPECIALS[value].icon : look.icon;
         button.setAttribute('aria-label', lock ? `${lock === 'ice' ? '冰冻' : '藤蔓锁住'}的${name}` : name);
-        button.innerHTML = icon ? `<span class="fruit">${icon}</span>` : '';
+        button.innerHTML = icon ? `<span class="fruit">${icon}</span>${tone >= 0 ? `<span class="fruit-mark" aria-hidden="true">${FRUIT_MARKS[tone]}</span>` : ''}` : '';
         fragment.appendChild(button);
       }
     }
@@ -539,7 +545,8 @@
     el.goalText.textContent = goalDescription();
     el.goalProgress.textContent = `${goalValue()} / ${goalTarget()}`;
     el.moves.textContent = state.goal.limit == null ? '不限步数' : `剩余 ${Math.max(0, state.goal.limit - state.moves)} 步`;
-    el.fruitLine.textContent = `本关水果 ${state.pool.map(type => FRUITS[type]).join(' ')} · 已解锁 ${UNLOCK_LEVELS.filter(level => level <= state.highestLevel).length}/20`;
+    el.fruitUnlock.textContent = `本关色标 · 已解锁 ${UNLOCK_LEVELS.filter(level => level <= state.highestLevel).length}/20`;
+    el.fruitLine.innerHTML = state.pool.map((type, tone) => `<span class="fruit-key tone-${tone}" title="${FRUIT_NAMES[type]}" aria-label="${FRUIT_NAMES[type]}，色标${FRUIT_MARKS[tone]}"><span aria-hidden="true">${FRUITS[type]}</span><b aria-hidden="true">${FRUIT_MARKS[tone]}</b></span>`).join('');
     el.hammerCount.textContent = `${state.hammers} 次`;
     el.hammer.disabled = state.hammers <= 0 || state.finished;
     el.hammer.setAttribute('aria-pressed', String(state.hammerArmed));
@@ -1142,6 +1149,6 @@
   });
   document.addEventListener('pointerdown', startMusic, { once: true });
 
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=14').catch(() => {}));
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=15').catch(() => {}));
   load();
 })();
