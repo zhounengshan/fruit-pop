@@ -11,6 +11,27 @@
   --board: #271333;
 }
 
+.goal-card { margin: 8px 0; padding: 12px; border: 1px solid #79f29d66; border-radius: 16px; background: linear-gradient(115deg,#79f29d18,#ffd84d0c); }
+.goal-heading, .goal-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.goal-heading strong { font-size:.9rem; color:var(--accent-2); }
+.goal-heading b { font-size:.72rem; white-space:nowrap; }
+.goal-card p { margin:7px 0; font-size:.76rem; line-height:1.5; }
+.goal-footer span { font-size:.65rem; color:var(--muted); line-height:1.6; }
+.goal-footer strong { font-size:.78rem; color:var(--accent); white-space:nowrap; }
+.control-button[aria-pressed="true"] { border-color:var(--accent); background:#ffd84d33; }
+.cell.special-rocket { background:linear-gradient(135deg,#2843a7,#35b8e0); box-shadow:inset 0 0 12px #adf4ff88; }
+.cell.type-5,.cell.type-10,.cell.type-17 { background:linear-gradient(145deg,#a53069,#481931); }
+.cell.type-6,.cell.type-8,.cell.type-11 { background:linear-gradient(145deg,#af8528,#4a3315); }
+.cell.type-7,.cell.type-13,.cell.type-16,.cell.type-18 { background:linear-gradient(145deg,#4b873f,#153324); }
+.cell.type-9,.cell.type-14,.cell.type-15 { background:linear-gradient(145deg,#a97058,#472b3c); }
+.cell.type-12,.cell.type-19 { background:linear-gradient(145deg,#5062a1,#25213e); }
+.modal-card.help-card { text-align:left; }
+.help-card h2,.help-card .modal-icon { text-align:center; }
+.help-rules dt { color:var(--accent); font-size:.82rem; font-weight:800; margin-top:12px; }
+.help-rules dd { margin:4px 0 0; color:var(--muted); font-size:.76rem; line-height:1.6; }
+.settle-button { margin-top:8px; padding:10px; border:1px solid #ffffff33; border-radius:12px; background:#ffffff15; font-size:.75rem; }
+.settle-button:disabled { opacity:.4; }
+.settle-button[hidden] { display:none; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; min-height: 100%; }
 html { background: var(--bg); }
@@ -144,7 +165,7 @@ body.fever .board { box-shadow: inset 0 1px #ffffff1e, 0 0 28px #ff7b3766, 0 18p
 .tip { min-height: 1em; text-align: center; color: var(--muted); font-size: .72rem; margin: 8px 0 0; }
 .modal { position: fixed; inset: 0; z-index: 10; background: #060509df; backdrop-filter: blur(9px); display: grid; place-items: center; padding: 24px; }
 .modal[hidden] { display: none; }
-.modal-card { width: min(100%, 360px); border: 1px solid var(--border); background: linear-gradient(160deg, var(--panel), var(--panel-2)); border-radius: 28px; padding: 25px; text-align: center; box-shadow: 0 30px 80px #000; }
+.modal-card { width: min(100%, 360px); max-height:90dvh; overflow-y:auto; border: 1px solid var(--border); background: linear-gradient(160deg, var(--panel), var(--panel-2)); border-radius: 28px; padding: 25px; text-align: center; box-shadow: 0 30px 80px #000; }
 .modal-icon { font-size: 3.8rem; }
 .modal h2 { font-size: 1.5rem; margin: 6px 0; }
 .modal p { color: var(--muted); line-height: 1.5; font-size: .88rem; }
