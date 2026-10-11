@@ -54,7 +54,8 @@ const late=new Set();for(let level=201;level<=260;level++)for(const v of g.fruit
 assert.equal(late.size,20);
 const css=fs.readFileSync(require.resolve('../style.css'),'utf8');
 // Fruit icons sit on transparent tiles with a fine neutral line, not colour blocks.
-assert.match(css,/\.cell\.fruit-tile \{ background:transparent; border:1px solid #ffffff26; box-shadow:none;/);
+assert.match(css,/\.cell\.fruit-tile \{ background:transparent; border:1px solid #536b592e; box-shadow:none;/);
+assert.match(css,/\.board \{ background:#eff3ec; border-color:#b8c8bd;/);
 assert.ok(!css.includes('--fruit-bg'));
 assert.match(css,/brightness\(1\.18\) saturate\(1\)/);
 assert.ok(!/\.cell\.type-\d+[^\n]*background/.test(css));
