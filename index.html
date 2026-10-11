@@ -7,11 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="消灭水果" />
-  <meta name="description" content="点击成群水果，挑战无限关卡。" />
+  <meta name="description" content="20种水果，订单收集、宝箱营救、丰收接力、步数挑战与连锁爆破。" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=13" />
+  <link rel="stylesheet" href="style.css?v=14" />
   <title>消灭水果</title>
 </head>
 <body data-theme="orchard">
@@ -32,7 +32,7 @@
     <section class="mission-card" aria-label="关卡信息">
       <div><span>关卡</span><strong id="levelText">第 1 关</strong></div>
       <div><span>累计总分</span><strong id="scoreText">0</strong></div>
-      <div><span>过关目标</span><strong id="targetText">500</strong></div>
+      <div><span>本关目标</span><strong id="targetText">250分</strong></div>
     </section>
 
     <div class="progress-track" aria-label="过关进度"><div id="progressBar"></div></div>
@@ -45,6 +45,11 @@
     </section>
     <div class="progress-extra"><span id="streakText">🔥 连胜 0 · 最高 0</span><span>📖 图鉴与纪录</span></div>
     <p id="obstacleHint" class="obstacle-hint" hidden></p>
+    <section class="goal-card" aria-label="本关玩法与目标">
+      <div class="goal-heading"><strong id="goalTitle">🍃 经典清盘</strong><b id="movesText">不限步数</b></div>
+      <p id="goalText"></p>
+      <div class="goal-footer"><span id="fruitLine"></span><strong id="goalProgress">0 / 250</strong></div>
+    </section>
 
     <section id="missionStrip" class="mission-strip">
       <span>⭐ 本关挑战</span>
@@ -76,9 +81,12 @@
     <section class="controls">
       <button id="shuffleBtn" class="control-button"><span>🔀</span><b>水果重排</b><small id="shuffleCount">3 次</small></button>
       <button id="restartBtn" class="control-button"><span>↻</span><b>重玩本关</b><small>本页分数清零</small></button>
+      <button id="hammerBtn" class="control-button" aria-pressed="false"><span>🔨</span><b>破局锤子</b><small id="hammerCount">2 次</small></button>
+      <button id="helpBtn" class="control-button"><span>💡</span><b>玩法说明</b><small>目标与连锁秘诀</small></button>
     </section>
 
     <p id="tip" class="tip">连消10个得😈炸弹，20个得👹超级炸弹</p>
+    <button id="settleBtn" class="settle-button" disabled>无可消组合时，可直接结算本关</button>
   </main>
 
   <div id="modal" class="modal" hidden>
@@ -121,6 +129,25 @@
     </div>
   </div>
 
-  <script src="game.js?v=13"></script>
+  <div id="helpModal" class="modal" hidden>
+    <div class="modal-card help-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="modal-icon">🍉</div><h2 id="helpTitle">水果冒险 · 玩法升级</h2>
+      <p>点击相邻的同种水果，至少两个。每关看上方目标，有限步数关卡消除一次算一步，重排和锤子不算步数。</p>
+      <dl class="help-rules">
+        <dt>🍃 经典清盘</dt><dd>不补水果，无组合后使用重排或锤子；单关消除得分加清盘奖励达到目标即可过关。</dd>
+        <dt>🧺 水果订单</dt><dd>优先收集指定水果，新水果持续补充。</dd>
+        <dt>📦 宝箱营救</dt><dd>消除箱子旁的水果，或用火箭、炸弹、锤子开箱。</dd>
+        <dt>🌱 丰收接力 / ⚡ 步数挑战</dt><dd>分别挑战消除总数量与单关分数，完成目标立即过关。</dd>
+        <dt>👾 每10关巨兽</dt><dd>消除指定水果攻击，步数内击败巨兽。</dd>
+        <dt>🚀 6～9个 / 😈 10～19个</dt><dd>获得十字火箭 / 3×3魔鬼炸弹。</dd>
+        <dt>👹 20～29个 / 🌈 30个以上</dt><dd>获得5×5超级炸弹 / 清除最多的一种水果的彩虹。</dd>
+        <dt>💥 连锁爆破</dt><dd>爆炸波及其他特效会继续引爆。两颗超级炸弹相邻可清全屏。</dd>
+        <dt>🔨 每关两次破局</dt><dd>点锤子，再点任意格；可打掉单个水果或障碍。再次点锤子取消。</dd>
+      </dl>
+      <p>20种水果从第5关起逐步解锁，至第200关全部开放。每3关调整出场组合，单盘最多6种；第200关后仍轮换。</p>
+      <button id="helpClose" class="primary-button">开始冒险</button>
+    </div>
+  </div>
+  <script src="game.js?v=14"></script>
 </body>
 </html>
