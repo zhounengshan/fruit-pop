@@ -53,11 +53,10 @@ for(let level=1;level<=1000;level++){
 const late=new Set();for(let level=201;level<=260;level++)for(const v of g.fruitPool(level))late.add(v);
 assert.equal(late.size,20);
 const css=fs.readFileSync(require.resolve('../style.css'),'utf8');
-// Fruit icons sit on transparent tiles with a fine neutral line, not colour blocks.
-assert.match(css,/\.cell\.fruit-tile \{ background:transparent; border:1px solid #536b592e; box-shadow:none;/);
-assert.match(css,/\.board \{ background:#eff3ec; border-color:#b8c8bd;/);
-assert.ok(!css.includes('--fruit-bg'));
-assert.match(css,/brightness\(1\.18\) saturate\(1\)/);
+// Restore the reference's glossy fruit tiles without reinstating markers or HUD clutter.
+assert.match(css,/\.cell\.fruit-tile \{ border:2px solid var\(--fruit-edge\); background:linear-gradient/);
+assert.equal(Array.from(css.matchAll(/\.tone-\d \{ --fruit-light:/g)).length,6);
+assert.match(css,/drop-shadow\(0 4px 2px #0009\) saturate\(1\.15\)/);
 assert.ok(!/\.cell\.type-\d+[^\n]*background/.test(css));
 assert.ok(!css.includes('.fruit-mark'));
 const html=fs.readFileSync(require.resolve('../index.html'),'utf8');
