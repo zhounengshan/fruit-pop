@@ -4,9 +4,8 @@
   const FRUITS = ['🍎','🍊','🍋','🥝','🍇','🍓','🍌','🍉','🍍','🍑','🍒','🥭','🫐','🍐','🥥','🍈','🍏','🍅','🥑','🫒'];
   const FRUIT_NAMES = ['红苹果','橙子','柠檬','猕猴桃','葡萄','草莓','香蕉','西瓜','菠萝','桃子','樱桃','芒果','蓝莓','梨','椰子','蜜瓜','青苹果','番茄','牛油果','橄榄'];
   const UNLOCK_LEVELS = [1,1,1,1,1,5,10,15,20,30,40,50,65,80,100,120,140,160,180,200];
-  // Assign a unique colour and shape to each fruit in the current board's pool.
-  // Never derive colour from fruit ID: late-game fruit IDs would share colours.
-  const FRUIT_MARKS = ['●', '▲', '■', '◆', '＋', '≡'];
+  // Choose one fruit per natural colour family; no extra symbols on the fruit.
+  const FRUIT_TONES = [0,1,1,2,4,0,1,2,1,0,0,1,3,2,5,2,2,0,2,2];
   const BOMB = 100;
   const SUPER_BOMB = 101;
   const CRATE = 102;
@@ -94,7 +93,8 @@
     collection: $('collectionBtn'), collectionModal: $('collectionModal'), collectionClose: $('collectionClose'),
     collectionItems: $('collectionItems'), records: $('recordsText'), streak: $('streakText'),
     obstacleHint: $('obstacleHint'), goalTitle: $('goalTitle'), goalText: $('goalText'),
-    goalProgress: $('goalProgress'), moves: $('movesText'), fruitLine: $('fruitLine'), fruitUnlock: $('fruitUnlock'),
+    goalProgress: $('goalProgress'), moves: $('movesText'),
+    menu: $('menuBtn'), menuModal: $('menuModal'), menuClose: $('menuClose'),
     hammer: $('hammerBtn'), hammerCount: $('hammerCount'), help: $('helpBtn'),
     helpModal: $('helpModal'), helpClose: $('helpClose'), settle: $('settleBtn')
   };
@@ -114,13 +114,13 @@
 
   function fruitPool(level) {
     const unlocked = UNLOCK_LEVELS.map((at, type) => ({at, type})).filter(item => item.at <= level).map(item => item.type);
-    const count = Math.min(typeCount(level), unlocked.length);
-    const newest = unlocked[unlocked.length - 1];
+    const count = Math.min(typeCount(level), new Set(unlocked.map(type => FRUIT_TONES[type])).size);
+    const newest = level >= 200 ? unlocked[Math.floor((level - 200) / 3) % unlocked.length] : unlocked[unlocked.length - 1];
     const start = Math.floor((level - 1) / 3) % unlocked.length;
     const pool = [newest];
     for (let offset = 0; pool.length < count; offset++) {
       const type = unlocked[(start + offset) % unlocked.length];
-      if (!pool.includes(type)) pool.push(type);
+      if (!pool.some(other => FRUIT_TONES[other] === FRUIT_TONES[type])) pool.push(type);
     }
     return pool;
   }
@@ -129,7 +129,7 @@
     return state.pool[Math.floor(Math.random() * state.pool.length)];
   }
 
-  function fruitTone(type) { return state.pool.indexOf(type); }
+  function fruitTone(type) { return FRUIT_TONES[type]; }
 
   function goalFor(level) {
     const tier = Math.min(8, Math.floor(level / 30));
@@ -519,7 +519,7 @@
         const name = value == null ? '空格' : isSpecial ? SPECIALS[value].name : look.name;
         const icon = value == null ? '' : isSpecial ? SPECIALS[value].icon : look.icon;
         button.setAttribute('aria-label', lock ? `${lock === 'ice' ? '冰冻' : '藤蔓锁住'}的${name}` : name);
-        button.innerHTML = icon ? `<span class="fruit">${icon}</span>${tone >= 0 ? `<span class="fruit-mark" aria-hidden="true">${FRUIT_MARKS[tone]}</span>` : ''}` : '';
+        button.innerHTML = icon ? `<span class="fruit">${icon}</span>` : '';
         fragment.appendChild(button);
       }
     }
@@ -541,16 +541,16 @@
       : state.obstacle === 'crate' ? '📦 水果箱：消除旁边一组或用炸弹打开' : '';
     el.obstacleHint.hidden = !state.obstacle;
     el.progress.style.width = `${Math.min(100, goalValue() / goalTarget() * 100)}%`;
-    el.goalTitle.textContent = state.goal.name;
+    el.goalTitle.textContent = state.goal.kind === 'harvest' ? `🧺 收集 ${FRUITS[state.goal.fruit]}`
+      : state.goal.kind === 'boss' ? `👾 消除 ${FRUITS[state.boss.fruit]} 攻击`
+      : state.goal.kind === 'bloom' ? '🌱 消除水果' : state.goal.name;
     el.goalText.textContent = goalDescription();
-    el.goalProgress.textContent = `${goalValue()} / ${goalTarget()}`;
+    el.goalProgress.textContent = `${goalValue()} / ${goalTarget()} ${['classic','sprint'].includes(state.goal.kind) ? '分' : '个'}`;
     el.moves.textContent = state.goal.limit == null ? '不限步数' : `剩余 ${Math.max(0, state.goal.limit - state.moves)} 步`;
-    el.fruitUnlock.textContent = `本关色标 · 已解锁 ${UNLOCK_LEVELS.filter(level => level <= state.highestLevel).length}/20`;
-    el.fruitLine.innerHTML = state.pool.map((type, tone) => `<span class="fruit-key tone-${tone}" title="${FRUIT_NAMES[type]}" aria-label="${FRUIT_NAMES[type]}，色标${FRUIT_MARKS[tone]}"><span aria-hidden="true">${FRUITS[type]}</span><b aria-hidden="true">${FRUIT_MARKS[tone]}</b></span>`).join('');
     el.hammerCount.textContent = `${state.hammers} 次`;
     el.hammer.disabled = state.hammers <= 0 || state.finished;
     el.hammer.setAttribute('aria-pressed', String(state.hammerArmed));
-    el.settle.hidden = state.goal.kind !== 'classic';
+    el.settle.hidden = state.goal.kind !== 'classic' || hasMoves();
     el.settle.disabled = state.locked || hasMoves();
     el.shuffleCount.textContent = `${state.shuffles} 次`;
     el.shuffle.disabled = state.shuffles <= 0;
@@ -566,6 +566,7 @@
     el.missionStrip.classList.toggle('done', missionDone);
 
     const feverEnergy = state.feverMoves > 0 ? 5 : Math.min(5, state.combo);
+    el.feverPanel.hidden = state.feverMoves <= 0;
     el.feverBar.style.width = `${feverEnergy * 20}%`;
     el.feverLabel.textContent = state.feverMoves > 0 ? `🔥 狂热模式 · 剩余${state.feverMoves}次` : `🔥 狂热能量 ${feverEnergy} / 5`;
 
@@ -583,6 +584,7 @@
     state.selected = null;
     if (!el.previewBar) return;
     el.previewBar.classList.remove('ready');
+    el.previewBar.hidden = true;
     el.previewText.textContent = state.confirmTap ? '先点选水果群，查看本次得分' : '点击同类水果，连续消除可进入狂热模式';
     el.previewScore.textContent = '';
   }
@@ -594,6 +596,7 @@
   function selectAction(action) {
     state.selected = action;
     el.previewBar.classList.add('ready');
+    el.previewBar.hidden = false;
     el.previewText.textContent = `${action.label}，再次点击确认`;
     el.previewScore.textContent = `+${actionGain(action)}`;
     render();
@@ -1132,6 +1135,11 @@
   });
   el.help.addEventListener('click', () => { el.helpModal.hidden = false; });
   el.helpClose.addEventListener('click', () => { el.helpModal.hidden = true; });
+  el.menu.addEventListener('click', () => { clearSelection(); el.menuModal.hidden = false; });
+  el.menuClose.addEventListener('click', () => { el.menuModal.hidden = true; });
+  for (const button of [el.settings, el.collection, el.help, el.restart]) {
+    button.addEventListener('click', () => { el.menuModal.hidden = true; });
+  }
   el.settle.addEventListener('click', () => { if (!state.locked && !hasMoves() && state.goal.kind === 'classic') finishRound(); });
   el.musicVolume.addEventListener('input', () => { state.musicVolume = Number(el.musicVolume.value) / 100; });
   el.music.addEventListener('click', () => {
@@ -1149,6 +1157,6 @@
   });
   document.addEventListener('pointerdown', startMusic, { once: true });
 
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=15').catch(() => {}));
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=16').catch(() => {}));
   load();
 })();

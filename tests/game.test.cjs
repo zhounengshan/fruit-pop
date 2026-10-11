@@ -20,7 +20,7 @@ function boot(saved = {}, failStorage = false) {
     Audio:class {paused=true;play(){return Promise.resolve();}pause(){}},
     setTimeout(fn,delay){timers.push({fn,delay});}};
   const source = fs.readFileSync(require.resolve('../game.js'),'utf8').replace('  load();',
-    '  globalThis.testGame = {state, el, startLevel, load, save, actionAt, expandChain, executeAction, collapse, refillBoard, hasMoves, checkState, finishRound, modalAction, remainingCount, goalWon, fruitPool, fruitTone, render, FRUIT_MARKS, showCollection, BOMB, SUPER_BOMB, ROCKET, RAINBOW, CRATE}; load();');
+    '  globalThis.testGame = {state, el, startLevel, load, save, actionAt, expandChain, executeAction, collapse, refillBoard, hasMoves, checkState, finishRound, modalAction, remainingCount, goalWon, fruitPool, fruitTone, render, showCollection, BOMB, SUPER_BOMB, ROCKET, RAINBOW, CRATE}; load();');
   vm.runInNewContext(source,context);
   const api = context.testGame;
   api.state.sound = api.state.music = false;
@@ -39,12 +39,11 @@ for(let level=1;level<=1000;level++){
   assert.ok(g.hasMoves());
   assert.ok(g.state.pool.length>=4&&g.state.pool.length<=6);
   assert.equal(new Set(g.state.pool.map(g.fruitTone)).size,g.state.pool.length);
-  assert.equal(new Set(g.state.pool.map(type=>g.FRUIT_MARKS[g.fruitTone(type)])).size,g.state.pool.length);
   for(const cell of g.el.board.children){
     if(cell.dataset.type!==''&&Number(cell.dataset.type)<100){
       const tone=g.fruitTone(Number(cell.dataset.type));
       assert.ok(cell.className.includes(`tone-${tone}`));
-      assert.ok(cell.innerHTML.includes(g.FRUIT_MARKS[tone]));
+      assert.ok(!cell.innerHTML.includes('fruit-mark'));
     }
   }
   for(const type of g.state.board.flat())assert.ok(type>=100||g.state.pool.includes(type));
@@ -57,7 +56,17 @@ const css=fs.readFileSync(require.resolve('../style.css'),'utf8');
 const palette=Array.from(css.matchAll(/\.tone-(\d) \{ --fruit-bg:(#[0-9a-f]{6});/g));
 assert.equal(palette.length,6);assert.equal(new Set(palette.map(m=>m[2])).size,6);
 assert.ok(!/\.cell\.type-\d+[^\n]*background/.test(css));
-// Colours and markers remain attached to the pool through replenishment and render.
+assert.ok(!css.includes('.fruit-mark'));
+const html=fs.readFileSync(require.resolve('../index.html'),'utf8');
+const playScreen=html.split('</main>')[0];
+assert.ok(!playScreen.includes('fruitLine'));
+assert.ok(!playScreen.includes('scoreText'));
+assert.ok(!playScreen.includes('missionStrip'));
+assert.ok(!playScreen.includes('helpBtn'));
+assert.ok(playScreen.includes('menuBtn'));
+g.el.menu.listeners.click();assert.equal(g.el.menuModal.hidden,false);
+g.el.menuClose.listeners.click();assert.equal(g.el.menuModal.hidden,true);
+// Natural colours remain stable, and there are no extra markers on fruits.
 g.state.level=403;g.startLevel();const before=Array.from(g.state.pool,type=>[type,g.fruitTone(type)]);
 g.state.board[0][0]=null;g.refillBoard();g.render();
 assert.deepEqual(Array.from(g.state.pool,type=>[type,g.fruitTone(type)]),before);
