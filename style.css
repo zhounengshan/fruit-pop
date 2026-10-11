@@ -20,9 +20,15 @@
 .goal-footer strong { font-size:.78rem; color:var(--accent); white-space:nowrap; }
 .control-button[aria-pressed="true"] { border-color:var(--accent); background:#ffd84d33; }
 .cell.special-rocket { background:linear-gradient(135deg,#2843a7,#35b8e0); box-shadow:inset 0 0 12px #adf4ff88; }
-.cell.fruit-tile { background:transparent; border:1px solid #536b592e; box-shadow:none; }
-.cell.fruit-tile::before { display:none; }
-.cell.fruit-tile .fruit { font-size:.95em; transform:translateY(0); filter:brightness(1.18) saturate(1) drop-shadow(0 1px 1px #0003); text-shadow:none; }
+.cell.fruit-tile { border:2px solid var(--fruit-edge); background:linear-gradient(145deg,var(--fruit-light),var(--fruit-mid) 58%,var(--fruit-dark)); box-shadow:0 5px 0 var(--fruit-base),inset 0 -6px 10px #0003; }
+.tone-0 { --fruit-light:#ff5d77; --fruit-mid:#dc163e; --fruit-dark:#8d0824; --fruit-edge:#ffd8df; --fruit-base:#650016; }
+.tone-1 { --fruit-light:#fff65a; --fruit-mid:#f1bd00; --fruit-dark:#a97000; --fruit-edge:#ffffdc; --fruit-base:#745000; }
+.tone-2 { --fruit-light:#6cf27d; --fruit-mid:#13b94a; --fruit-dark:#086925; --fruit-edge:#d6ffdc; --fruit-base:#034b19; }
+.tone-3 { --fruit-light:#72b5ff; --fruit-mid:#2875da; --fruit-dark:#143e8c; --fruit-edge:#d9eeff; --fruit-base:#0c2c66; }
+.tone-4 { --fruit-light:#d784ff; --fruit-mid:#962de0; --fruit-dark:#52108c; --fruit-edge:#f5ddff; --fruit-base:#38045f; }
+.tone-5 { --fruit-light:#f6efe3; --fruit-mid:#b7a897; --fruit-dark:#706052; --fruit-edge:#fff8ee; --fruit-base:#4a3d32; }
+.cell.type-1 { --fruit-light:#ffb21a; --fruit-mid:#ee6600; --fruit-dark:#9b2d00; --fruit-edge:#ffe9b6; --fruit-base:#6c2100; }
+.cell.fruit-tile .fruit { font-size:1em; transform:translateY(-2px); filter:drop-shadow(0 4px 2px #0009) saturate(1.15); text-shadow:0 2px 3px #000c; }
 .modal-card.help-card { text-align:left; }
 .help-card h2,.help-card .modal-icon { text-align:center; }
 .help-rules dt { color:var(--accent); font-size:.82rem; font-weight:800; margin-top:12px; }
@@ -219,18 +225,9 @@ body.fever .board { box-shadow: inset 0 1px #ffffff1e, 0 0 28px #ff7b3766, 0 18p
 .goal-value { display:block; font-size:1.35rem; margin:8px 0; color:var(--accent); }
 .goal-card .progress-track { margin:0; height:5px; }
 .board { border-radius:20px; padding:8px; gap:5px; box-shadow:inset 0 1px #ffffff20,0 8px 24px #0003; }
-.cell { border-radius:11px; }
+.cell { border-radius:15px; }
 .cell.selected { filter:brightness(1.1); outline:2px solid #dbc89b; outline-offset:-2px; animation:none; }
 .cell:active { filter:brightness(1.1); }
-/* Quiet surfaces keep the fruit silhouettes, not a luminous grid, in focus. */
-body { background:linear-gradient(180deg,#282b32,var(--bg) 80%); }
-body::before { display:none; }
-.board { background:#24282e; border:1px solid #434850; box-shadow:none; }
-.cell.special-crate { background:#574634; border:1px solid #847157; box-shadow:none; }
-.cell.special-rocket { background:#334b5a; border:1px solid #678a9d; box-shadow:none; }
-.cell.special-devil { background:#643b34; border:1px solid #a77c60; box-shadow:none; animation:none; }
-.cell.special-super-devil { background:#603448; border:1px solid #aa7b89; box-shadow:none; animation:none; }
-.cell.special-rainbow { background:conic-gradient(#775365,#887b4e,#4d7962,#4d6a87,#6e5781,#775365); border:1px solid #a79aaf; box-shadow:none; }
 .controls { margin-top:14px; gap:12px; }
 .controls .control-button { display:flex; justify-content:center; align-items:center; gap:8px; padding:12px; min-height:48px; box-shadow:none; }
 .controls .control-button b { font-size:.85rem; }
@@ -246,18 +243,3 @@ body::before { display:none; }
 .preview-bar { margin-top:10px; }
 .fever-panel { margin-top:10px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
-
-/* Light, softly tinted play surface; fruit tiles remain transparent. */
-html { background:#dce4de; }
-body { background:linear-gradient(180deg,#e9eee8,#dce4de); }
-.game-shell { --text:#293d31; --muted:#576b5d; --accent:#536d38; --accent-2:#5d7c63; color:var(--text); background:transparent; border-color:#b8c8bd; }
-.topbar h1 { background:none; color:#293d31; filter:none; }
-.board { background:#eff3ec; border-color:#b8c8bd; }
-.goal-card { background:#f4f6f0; border-color:#bdccbf; }
-.goal-card .progress-track { background:#d1dccf; }
-.progress-track div { box-shadow:none; }
-.topbar .icon-button, .controls .control-button { background:#f1f5ee; border-color:#b4c5b8; color:#293d31; box-shadow:none; }
-.cell.selected { outline-color:#527348; }
-.preview-bar, .fever-panel { background:#f4f6f0; border-color:#bdccbf; }
-.preview-bar strong { color:#293d31; }
-.modal { --text:#fffaf0; --muted:#c6b7c9; --accent:#ffd84d; --accent-2:#79f29d; color:var(--text); }
