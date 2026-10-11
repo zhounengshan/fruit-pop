@@ -11,57 +11,21 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="style.css?v=15" />
+  <link rel="stylesheet" href="style.css?v=16" />
   <title>消灭水果</title>
 </head>
 <body data-theme="orchard">
   <main class="game-shell">
     <header class="topbar">
-      <div>
-        <p id="stageName" class="eyebrow">阳光果园 · 第1阶段</p>
-        <h1>消灭水果</h1>
-      </div>
-      <div class="top-actions">
-        <button id="collectionBtn" class="icon-button" aria-label="查看水果图鉴和纪录">📖</button>
-        <button id="musicBtn" class="icon-button" aria-label="切换背景音乐">🎵</button>
-        <button id="soundBtn" class="icon-button" aria-label="切换音效">🔊</button>
-        <button id="settingsBtn" class="icon-button" aria-label="打开设置">⚙️</button>
-      </div>
+      <h1>消灭水果</h1>
+      <strong id="levelText" class="level-label">第 1 关</strong>
+      <button id="menuBtn" class="icon-button" aria-label="打开游戏菜单">☰</button>
     </header>
 
-    <section class="mission-card" aria-label="关卡信息">
-      <div><span>关卡</span><strong id="levelText">第 1 关</strong></div>
-      <div><span>累计总分</span><strong id="scoreText">0</strong></div>
-      <div><span>本关目标</span><strong id="targetText">250分</strong></div>
-    </section>
-
-    <div class="progress-track" aria-label="过关进度"><div id="progressBar"></div></div>
-
-    <section class="live-stats" aria-label="实时得分信息">
-      <span>本页 <b id="roundScoreText">0</b></span>
-      <span>还差 <b id="gapText">500</b></span>
-      <span>剩余 <b id="remainingText">80</b></span>
-      <span>星星 <b id="starsText">0</b> ⭐</span>
-    </section>
-    <div class="progress-extra"><span id="streakText">🔥 连胜 0 · 最高 0</span><span>📖 图鉴与纪录</span></div>
-    <p id="obstacleHint" class="obstacle-hint" hidden></p>
     <section class="goal-card" aria-label="本关玩法与目标">
       <div class="goal-heading"><strong id="goalTitle">🍃 经典清盘</strong><b id="movesText">不限步数</b></div>
-      <p id="goalText"></p>
-      <div class="goal-footer"><span id="fruitUnlock"></span><strong id="goalProgress">0 / 250</strong></div>
-      <div id="fruitLine" class="fruit-legend" aria-label="本关水果颜色与形状对照"></div>
-    </section>
-
-    <section id="missionStrip" class="mission-strip">
-      <span>⭐ 本关挑战</span>
-      <strong id="missionText">剩余不超过5个水果</strong>
-      <em id="missionStatus">进行中</em>
-    </section>
-
-    <section id="bossPanel" class="boss-panel" hidden>
-      <div class="boss-head"><span id="bossIcon">👾</span><strong id="bossName">水果巨兽</strong><b id="bossTarget">消除 🍎 攻击</b></div>
-      <div class="boss-track"><div id="bossBar"></div></div>
-      <small id="bossHp">生命 10 / 10</small>
+      <strong id="goalProgress" class="goal-value">0 / 250</strong>
+      <div class="progress-track" aria-label="过关进度"><div id="progressBar"></div></div>
     </section>
 
     <section class="board-wrap">
@@ -69,26 +33,50 @@
       <div id="board" class="board" role="grid" aria-label="水果消除棋盘"></div>
     </section>
 
-    <section class="preview-bar" id="previewBar" aria-live="polite">
+    <section class="preview-bar" id="previewBar" aria-live="polite" hidden>
       <span id="previewText">先点选水果群，查看本次得分</span>
       <strong id="previewScore"></strong>
     </section>
 
-    <section id="feverPanel" class="fever-panel" aria-label="狂热模式进度">
+    <section id="feverPanel" class="fever-panel" aria-label="狂热模式进度" hidden>
       <span id="feverLabel">🔥 狂热能量 0 / 5</span>
       <div class="fever-track"><div id="feverBar"></div></div>
     </section>
 
     <section class="controls">
-      <button id="shuffleBtn" class="control-button"><span>🔀</span><b>水果重排</b><small id="shuffleCount">3 次</small></button>
-      <button id="restartBtn" class="control-button"><span>↻</span><b>重玩本关</b><small>本页分数清零</small></button>
-      <button id="hammerBtn" class="control-button" aria-pressed="false"><span>🔨</span><b>破局锤子</b><small id="hammerCount">2 次</small></button>
-      <button id="helpBtn" class="control-button"><span>💡</span><b>玩法说明</b><small>目标与连锁秘诀</small></button>
+      <button id="shuffleBtn" class="control-button"><span>🔀</span><b>重排</b><small id="shuffleCount">3 次</small></button>
+      <button id="hammerBtn" class="control-button" aria-pressed="false"><span>🔨</span><b>锤子</b><small id="hammerCount">2 次</small></button>
     </section>
 
-    <p id="tip" class="tip">连消10个得😈炸弹，20个得👹超级炸弹</p>
-    <button id="settleBtn" class="settle-button" disabled>无可消组合时，可直接结算本关</button>
+    <button id="settleBtn" class="settle-button" hidden>结算本关</button>
   </main>
+
+  <div id="menuModal" class="modal" hidden>
+    <div class="modal-card menu-card" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+      <h2 id="menuTitle">游戏菜单</h2>
+      <p id="stageName" class="eyebrow"></p>
+      <div class="menu-stats"><span>累计得分 <b id="scoreText">0</b></span><span>星星 <b id="starsText">0</b> ⭐</span></div>
+      <p id="streakText"></p>
+      <details class="round-details"><summary>本关详情</summary>
+        <p id="goalText"></p><p>目标 <b id="targetText"></b> · 得分 <b id="roundScoreText"></b> · 还差 <b id="gapText"></b> · 剩余 <b id="remainingText"></b> 个</p>
+        <p id="obstacleHint" hidden></p>
+        <section id="missionStrip"><strong id="missionText"></strong> · <span id="missionStatus"></span></section>
+        <section id="bossPanel" class="boss-panel" hidden>
+          <div class="boss-head"><span id="bossIcon">👾</span><strong id="bossName">水果巨兽</strong><b id="bossTarget">消除 🍎 攻击</b></div>
+          <div class="boss-track"><div id="bossBar"></div></div><small id="bossHp">生命 10 / 10</small>
+        </section>
+        <p id="tip"></p>
+      </details>
+      <div class="menu-actions">
+        <button id="collectionBtn" class="menu-button">📖 图鉴与纪录</button>
+        <button id="helpBtn" class="menu-button">💡 玩法说明</button>
+        <button id="settingsBtn" class="menu-button">⚙️ 游戏设置</button>
+        <button id="restartBtn" class="menu-button">↻ 重玩本关</button>
+      </div>
+      <div class="audio-actions"><button id="musicBtn" class="icon-button" aria-label="切换背景音乐">🎵</button><button id="soundBtn" class="icon-button" aria-label="切换音效">🔊</button></div>
+      <button id="menuClose" class="primary-button">继续游戏</button>
+    </div>
+  </div>
 
   <div id="modal" class="modal" hidden>
     <div class="modal-card result-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -146,10 +134,10 @@
         <dt>🔨 每关两次破局</dt><dd>点锤子，再点任意格；可打掉单个水果或障碍。再次点锤子取消。</dd>
       </dl>
       <p>20种水果从第5关起逐步解锁，至第200关全部开放。每3关调整出场组合，单盘最多6种；第200关后仍轮换。</p>
-      <p>辨认水果：同一关每种水果独占一种底色和角标。看棋盘上方色标对照，颜色相近时也可用 ● ▲ ■ ◆ ＋ ≡ 区分；同一种水果才可连消。色标在本关内保持不变。</p>
+      <p>每关从不同自然色系选择水果，避免绿色或黄色水果扎堆。同一种水果的颜色不会随关卡改变。</p>
       <button id="helpClose" class="primary-button">开始冒险</button>
     </div>
   </div>
-  <script src="game.js?v=15"></script>
+  <script src="game.js?v=16"></script>
 </body>
 </html>
