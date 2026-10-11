@@ -1157,6 +1157,6 @@
   });
   document.addEventListener('pointerdown', startMusic, { once: true });
 
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=17').catch(() => {}));
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js?v=18').catch(() => {}));
   load();
 })();
