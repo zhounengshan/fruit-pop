@@ -20,7 +20,7 @@
 .goal-footer strong { font-size:.78rem; color:var(--accent); white-space:nowrap; }
 .control-button[aria-pressed="true"] { border-color:var(--accent); background:#ffd84d33; }
 .cell.special-rocket { background:linear-gradient(135deg,#2843a7,#35b8e0); box-shadow:inset 0 0 12px #adf4ff88; }
-.cell.fruit-tile { background:transparent; border:1px solid #ffffff26; box-shadow:none; }
+.cell.fruit-tile { background:transparent; border:1px solid #536b592e; box-shadow:none; }
 .cell.fruit-tile::before { display:none; }
 .cell.fruit-tile .fruit { font-size:.95em; transform:translateY(0); filter:brightness(1.18) saturate(1) drop-shadow(0 1px 1px #0003); text-shadow:none; }
 .modal-card.help-card { text-align:left; }
@@ -246,3 +246,18 @@ body::before { display:none; }
 .preview-bar { margin-top:10px; }
 .fever-panel { margin-top:10px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+/* Light, softly tinted play surface; fruit tiles remain transparent. */
+html { background:#dce4de; }
+body { background:linear-gradient(180deg,#e9eee8,#dce4de); }
+.game-shell { --text:#293d31; --muted:#576b5d; --accent:#536d38; --accent-2:#5d7c63; color:var(--text); background:transparent; border-color:#b8c8bd; }
+.topbar h1 { background:none; color:#293d31; filter:none; }
+.board { background:#eff3ec; border-color:#b8c8bd; }
+.goal-card { background:#f4f6f0; border-color:#bdccbf; }
+.goal-card .progress-track { background:#d1dccf; }
+.progress-track div { box-shadow:none; }
+.topbar .icon-button, .controls .control-button { background:#f1f5ee; border-color:#b4c5b8; color:#293d31; box-shadow:none; }
+.cell.selected { outline-color:#527348; }
+.preview-bar, .fever-panel { background:#f4f6f0; border-color:#bdccbf; }
+.preview-bar strong { color:#293d31; }
+.modal { --text:#fffaf0; --muted:#c6b7c9; --accent:#ffd84d; --accent-2:#79f29d; color:var(--text); }
