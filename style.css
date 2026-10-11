@@ -20,11 +20,19 @@
 .goal-footer strong { font-size:.78rem; color:var(--accent); white-space:nowrap; }
 .control-button[aria-pressed="true"] { border-color:var(--accent); background:#ffd84d33; }
 .cell.special-rocket { background:linear-gradient(135deg,#2843a7,#35b8e0); box-shadow:inset 0 0 12px #adf4ff88; }
-.cell.type-5,.cell.type-10,.cell.type-17 { background:linear-gradient(145deg,#a53069,#481931); }
-.cell.type-6,.cell.type-8,.cell.type-11 { background:linear-gradient(145deg,#af8528,#4a3315); }
-.cell.type-7,.cell.type-13,.cell.type-16,.cell.type-18 { background:linear-gradient(145deg,#4b873f,#153324); }
-.cell.type-9,.cell.type-14,.cell.type-15 { background:linear-gradient(145deg,#a97058,#472b3c); }
-.cell.type-12,.cell.type-19 { background:linear-gradient(145deg,#5062a1,#25213e); }
+.tone-0 { --fruit-bg:#a82343; --fruit-edge:#f69cb0; }
+.tone-1 { --fruit-bg:#f3ce46; --fruit-edge:#fff0a2; }
+.tone-2 { --fruit-bg:#167c68; --fruit-edge:#8ae5c5; }
+.tone-3 { --fruit-bg:#2258b7; --fruit-edge:#98c4ff; }
+.tone-4 { --fruit-bg:#7643a1; --fruit-edge:#d8aff7; }
+.tone-5 { --fruit-bg:#edf1f7; --fruit-edge:#fff; }
+.fruit-legend { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+.fruit-key { display:inline-flex; align-items:center; justify-content:center; gap:5px; min-width:36px; padding:3px 5px; background:var(--fruit-bg); border:1px solid var(--fruit-edge); border-radius:7px; font-size:1rem; }
+.fruit-key b { display:grid; place-items:center; width:12px; height:12px; border-radius:3px; font:800 10px/1 Arial,sans-serif; color:#152033; background:#fff; }
+.cell.fruit-tile { background:var(--fruit-bg,#334155); border-color:var(--fruit-edge,#fff); box-shadow:0 3px 0 #090b1880; }
+.cell.fruit-tile::before { display:none; }
+.cell.fruit-tile .fruit { font-size:.85em; transform:translate(-1px,2px); filter:drop-shadow(0 1px 1px #0005); text-shadow:none; }
+.fruit-mark { position:absolute; top:2px; right:2px; z-index:3; display:grid; place-items:center; width:clamp(11px,2.8vw,15px); height:clamp(11px,2.8vw,15px); color:#152033; background:#fff; border:1px solid #152033; border-radius:3px; font:900 clamp(9px,2.4vw,12px)/1 Arial,sans-serif; pointer-events:none; }
 .modal-card.help-card { text-align:left; }
 .help-card h2,.help-card .modal-icon { text-align:center; }
 .help-rules dt { color:var(--accent); font-size:.82rem; font-weight:800; margin-top:12px; }
@@ -114,11 +122,6 @@ button { font: inherit; color: inherit; }
   transition: transform .12s cubic-bezier(.2,1.4,.4,1), filter .13s, opacity .22s, outline-color .15s; overflow: hidden;
 }
 .cell::before { content: ""; position: absolute; inset: 2px 4px auto; height: 42%; border-radius: 10px; background: linear-gradient(#ffffff88, #ffffff0a); pointer-events: none; }
-.cell.type-0 { background: linear-gradient(145deg, #ff5d77, #dc163e 58%, #8d0824); border-color: #ffd8df; box-shadow: 0 5px 0 #650016, inset 0 -6px 10px #69001744; }
-.cell.type-1 { background: linear-gradient(145deg, #ffb21a, #ee6600 58%, #9b2d00); border-color: #ffe9b6; box-shadow: 0 5px 0 #6c2100, inset 0 -6px 10px #6b220044; }
-.cell.type-2 { background: linear-gradient(145deg, #fff65a, #f1bd00 58%, #a97000); border-color: #ffffdc; box-shadow: 0 5px 0 #745000, inset 0 -6px 10px #6b470044; }
-.cell.type-3 { background: linear-gradient(145deg, #6cf27d, #13b94a 58%, #086925); border-color: #d6ffdc; box-shadow: 0 5px 0 #034b19, inset 0 -6px 10px #003c1344; }
-.cell.type-4 { background: linear-gradient(145deg, #d784ff, #962de0 58%, #52108c); border-color: #f5ddff; box-shadow: 0 5px 0 #38045f, inset 0 -6px 10px #35005844; }
 .cell.special-devil { background: radial-gradient(circle at 35% 30%, #ffef62, #ff4d20 43%, #750016 78%); border-color: #ffd56b; box-shadow: 0 4px 0 #48000c, 0 0 18px #ff4a24; animation: devilPulse .72s ease-in-out infinite alternate; }
 .cell.special-super-devil { background: conic-gradient(from 30deg, #180013, #ff164c, #ffb000, #6b003d, #180013); border-color: #fff07b; box-shadow: 0 4px 0 #2d001d, 0 0 22px #ff245d, 0 0 34px #ffb00088; animation: superDevilPulse .48s ease-in-out infinite alternate; }
 .cell.special-crate { background: linear-gradient(145deg, #b87736, #654022); border-color: #ebbc83; box-shadow: 0 4px 0 #382010; }
